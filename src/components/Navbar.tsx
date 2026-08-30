@@ -1,0 +1,140 @@
+import React, { useState, useEffect } from 'react';
+import { CrosshairIcon, SunIcon, MoonIcon, MenuIcon, XIcon, ArrowUpRightIcon, TerminalIcon } from './Icons';
+import { detectDevice } from '../lib/deviceDetection';
+import { useTheme } from '../lib/theme';
+
+export const Navbar: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const deviceType = detectDevice();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 15);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const getCtaLabel = () => {
+    if (deviceType === 'android-mobile') {
+      return { text: 'APK' };
+    } else if (deviceType === 'ios-mobile') {
+      return { text: 'iOS' };
+    }
+    return { text: 'Get Started' };
+  };
+
+  const cta = getCtaLabel();
+
+  return (
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+        isScrolled
+          ? 'bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-800 py-2.5 sm:py-3.5 shadow-sm'
+          : 'bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50 py-3 sm:py-5'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        
+        {/* Brand Wordmark & Glyph */}
+        <a href="#" className="flex items-center gap-2.5 group shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-black text-white dark:bg-white dark:text-black flex items-center justify-center border border-neutral-700 dark:border-neutral-300 group-hover:scale-105 transition-transform shadow-sm">
+            <CrosshairIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-xs sm:text-sm tracking-widest text-neutral-950 dark:text-white uppercase font-mono leading-none">
+              IDR
+            </span>
+            <span className="text-[9px] sm:text-[10px] tracking-wider text-neutral-500 dark:text-neutral-400 uppercase mt-0.5 font-mono">
+              Dead Reckoning
+            </span>
+          </div>
+        </a>
+
+        {/* Desktop Nav Links */}
+        <nav className="hidden lg:flex items-center gap-7 text-xs font-mono font-medium text-neutral-600 dark:text-neutral-400">
+          <a href="#product" className="hover:text-black dark:hover:text-white transition-colors">PRODUCT</a>
+          <a href="#problem" className="hover:text-black dark:hover:text-white transition-colors">THE PROBLEM</a>
+          <a href="#technology" className="hover:text-black dark:hover:text-white transition-colors">TECHNOLOGY</a>
+          <a href="#pipeline" className="hover:text-black dark:hover:text-white transition-colors">ARCHITECTURE</a>
+          <a href="#monitoring" className="hover:text-black dark:hover:text-white transition-colors">OBSERVABILITY</a>
+          <a href="#performance" className="hover:text-black dark:hover:text-white transition-colors">BENCHMARKS</a>
+        </nav>
+
+        {/* Desktop Right Controls */}
+        <div className="hidden sm:flex items-center gap-2.5">
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle dark/light theme"
+            className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white hover:border-neutral-400 dark:hover:border-neutral-600 transition-all flex items-center gap-2 text-xs font-mono"
+          >
+            {theme === 'dark' ? (
+              <>
+                <SunIcon className="w-3.5 h-3.5 text-neutral-200" />
+                <span className="text-[11px] uppercase tracking-wider font-semibold">Light</span>
+              </>
+            ) : (
+              <>
+                <MoonIcon className="w-3.5 h-3.5 text-neutral-800" />
+                <span className="text-[11px] uppercase tracking-wider font-semibold">Dark</span>
+              </>
+            )}
+          </button>
+
+          <a
+            href="#install"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-mono font-bold tracking-wide transition-all hover:opacity-90 active:scale-95 shadow-sm"
+          >
+            <span>{cta.text}</span>
+            <ArrowUpRightIcon className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Mobile Header Controls (Aligned & Compact) */}
+        <div className="flex items-center gap-1.5 sm:hidden">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
+          </button>
+
+          <a
+            href="#install"
+            className="inline-flex items-center px-3 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold font-mono"
+          >
+            {cta.text}
+          </a>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <XIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Drawer (Clean spacing) */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden bg-white dark:bg-[#0A0A0E] border-b border-neutral-200 dark:border-neutral-800 px-5 py-4 space-y-3 shadow-2xl">
+          <nav className="flex flex-col space-y-2 text-xs font-mono text-neutral-700 dark:text-neutral-300">
+            <a onClick={() => setMobileMenuOpen(false)} href="#product" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Product Overview</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">The Problem (Outages)</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#technology" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Technology & Sensors</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#pipeline" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Architecture Flow</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#monitoring" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Live Observability</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#performance" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Benchmarks</a>
+            <a onClick={() => setMobileMenuOpen(false)} href="#install" className="py-3 mt-1 inline-flex justify-center items-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black font-bold text-xs font-mono">
+              <TerminalIcon className="w-3.5 h-3.5" /> Deploy IDR Mobile
+            </a>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+};

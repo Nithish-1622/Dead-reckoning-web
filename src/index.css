@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #FFFFFF;
+    --bg-card: #F4F4F6;
+    --bg-elevated: #FFFFFF;
+    --border-color: #E2E2E8;
+    --border-subtle: #D4D4DC;
+    --text-main: #08080A;
+    --text-muted: #666675;
+  }
+
+  .dark {
+    --bg-main: #000000;
+    --bg-card: #0D0D10;
+    --bg-elevated: #141418;
+    --border-color: #222228;
+    --border-subtle: #303038;
+    --text-main: #FFFFFF;
+    --text-muted: #9E9EA8;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.2s ease, color 0.2s ease;
+    overflow-x: hidden;
+  }
+}
+
+/* Crisp Monochrome Glassmorphism & High-Contrast Cards */
+.mono-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.06);
+}
+
+.dark .mono-panel {
+  background: rgba(10, 10, 14, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.8);
+}
+
+/* Subtle Specular Top Highlights */
+.specular-top {
+  position: relative;
+}
+.specular-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.25), transparent);
+  pointer-events: none;
+}
+
+/* High-Contrast Leaflet Customization */
+.leaflet-container {
+  background-color: #000000 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 130, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 130, 0.5);
+}
