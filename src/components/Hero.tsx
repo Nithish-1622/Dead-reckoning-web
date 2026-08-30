@@ -24,8 +24,8 @@ export const Hero: React.FC = () => {
             <span className="truncate">AI SENSOR-FUSION | ZERO EXTERNAL HARDWARE</span>
           </div>
 
-          {/* High-Contrast Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-neutral-950 dark:text-white tracking-tight leading-[1.12] sm:leading-[1.08] font-sans">
+          {/* High-Contrast Gradient Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight sm:tracking-[-0.035em] leading-[1.12] sm:leading-[1.06] font-sans bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-500 dark:from-white dark:via-[#F4F4F6] dark:to-[#9E9EA8] bg-clip-text text-transparent drop-shadow-sm select-none">
             Navigation that keeps moving when GNSS disappears.
           </h1>
 
