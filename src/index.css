@@ -66,8 +66,12 @@
 
 /* High-Contrast Leaflet Customization */
 .leaflet-container {
-  background-color: #000000 !important;
+  background-color: #0b0b0f !important;
   font-family: 'JetBrains Mono', monospace !important;
+}
+
+.dark .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(110%) grayscale(0.8);
 }
 
 /* Custom Scrollbars */

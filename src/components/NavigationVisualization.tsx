@@ -7,7 +7,10 @@ import {
   RotateCcwIcon, 
   ShieldAlertIcon, 
   CompassIcon, 
-  CrosshairIcon 
+  CrosshairIcon, 
+  Building2Icon,
+  LayersIcon,
+  EyeIcon
 } from './Icons';
 import { GNSSState, DRMode } from '../lib/types';
 import { useTheme } from '../lib/theme';
@@ -16,13 +19,18 @@ interface NavigationVisualizationProps {
   onStatusChange?: (status: GNSSState) => void;
 }
 
-interface CityRoute {
+export type MapViewAngle = '2d' | '3d-cockpit' | '3d-isometric';
+
+export interface CityRoute {
   id: string;
   name: string;
   shortName: string;
+  state: string;
   destination: string;
-  center: [number, number];
+  center: [number, number]; // [lat, lng]
   zoom: number;
+  // High-density, exact real-world road centerline coordinates [lat, lng]
+  roadPath: [number, number][];
   waypoints: {
     lat: number;
     lng: number;
@@ -33,64 +41,124 @@ interface CityRoute {
   }[];
 }
 
-const GOOGLE_MAPS_ROUTES: CityRoute[] = [
+export const COIMBATORE_NAVIGATION_ROUTES: CityRoute[] = [
   {
-    id: 'sf-downtown',
-    name: 'San Francisco Broadway Tunnel',
-    shortName: 'San Francisco',
-    destination: 'Embarcadero via Broadway Tunnel',
-    center: [37.7965, -122.4140],
+    id: 'cbe-gandhipuram',
+    name: 'Coimbatore — Gandhipuram Flyover & 100ft Road Loop',
+    shortName: 'Gandhipuram, CBE',
+    state: 'Tamil Nadu',
+    destination: 'Cross Cut Rd via Gandhipuram Under-Deck',
+    center: [11.0195, 76.9630],
     zoom: 16,
+    roadPath: [
+      // 1. Dr. Nanjappa Road (Heading North toward Gandhipuram)
+      [11.01450, 76.96320],
+      [11.01550, 76.96390],
+      [11.01660, 76.96470],
+      [11.01750, 76.96540], // Gandhipuram Signal
+      // 2. Gandhipuram 2-Tier Flyover Sub-Deck (Tunnel / Outage Zone on Sathyamangalam Rd)
+      [11.01860, 76.96620], // Enter Flyover Sub-Level (Outage begins)
+      [11.01970, 76.96700], // Under Flyover Deck
+      [11.02080, 76.96780],
+      [11.02190, 76.96860], // North Portal Exit
+      // 3. Turn Left onto 100 Feet Road (Heading West)
+      [11.02280, 76.96750],
+      [11.02340, 76.96580],
+      [11.02380, 76.96400], // 100 Feet Road Arterial
+      [11.02410, 76.96200],
+      [11.02430, 76.96000],
+      // 4. Turn Left onto Cross Cut Road (Heading South)
+      [11.02350, 76.95920],
+      [11.02180, 76.95850], // Cross Cut Road Shopping District
+      [11.02000, 76.95780],
+      [11.01820, 76.95710], // Brookefields Mall Arterial
+      // 5. Return via Dr. Rajendra Prasad Rd back to Dr. Nanjappa Rd
+      [11.01680, 76.95850],
+      [11.01560, 76.96080],
+      [11.01450, 76.96320]  // Loop complete
+    ],
     waypoints: [
-      { lat: 37.7930, lng: -122.4225, street: 'Van Ness Avenue', zone: 'open', speedLimit: 45, maneuver: 'Head North on Van Ness Ave' },
-      { lat: 37.7960, lng: -122.4230, street: 'Van Ness / Broadway', zone: 'urban-canyon', speedLimit: 40, maneuver: 'In 120m, Turn Right onto Broadway' },
-      { lat: 37.7966, lng: -122.4200, street: 'Broadway Street East', zone: 'urban-canyon', speedLimit: 45, maneuver: 'In 250m, Approach Broadway Tunnel' },
-      { lat: 37.7970, lng: -122.4172, street: 'Broadway Tunnel West Portal', zone: 'tunnel', speedLimit: 55, maneuver: 'Enter Broadway Tunnel (Subterranean Outage)' },
-      { lat: 37.7975, lng: -122.4140, street: 'Broadway Tunnel Arterial', zone: 'tunnel', speedLimit: 58, maneuver: 'Continue in Tunnel for 450m (INS Active)' },
-      { lat: 37.7978, lng: -122.4105, street: 'Broadway Tunnel East Portal', zone: 'tunnel', speedLimit: 50, maneuver: 'Prepare to exit Tunnel in 100m' },
-      { lat: 37.7980, lng: -122.4080, street: 'Columbus Avenue', zone: 'recovering', speedLimit: 42, maneuver: 'Turn slight right onto Columbus Ave' },
-      { lat: 37.7995, lng: -122.4070, street: 'Columbus Ave / Washington Square', zone: 'open', speedLimit: 40, maneuver: 'Continue North on Columbus Ave' },
-      { lat: 37.8020, lng: -122.4090, street: 'Powell Street', zone: 'open', speedLimit: 40, maneuver: 'Turn Left onto Powell St' },
-      { lat: 37.7990, lng: -122.4150, street: 'Pacific Avenue', zone: 'urban-canyon', speedLimit: 42, maneuver: 'Continue on Pacific Ave toward Van Ness' },
-      { lat: 37.7930, lng: -122.4225, street: 'Van Ness Avenue', zone: 'open', speedLimit: 45, maneuver: 'Arriving at Destination' }
+      { lat: 11.01450, lng: 76.96320, street: 'Dr. Nanjappa Road', zone: 'open', speedLimit: 40, maneuver: 'Head North on Dr. Nanjappa Rd' },
+      { lat: 11.01750, lng: 76.96540, street: 'Gandhipuram Central Signal', zone: 'urban-canyon', speedLimit: 35, maneuver: 'Approaching 2-Tier Flyover Underpass' },
+      { lat: 11.01860, lng: 76.96620, street: 'Gandhipuram Flyover Under-Deck', zone: 'tunnel', speedLimit: 45, maneuver: 'Enter Flyover Sub-Deck (GNSS Lost)' },
+      { lat: 11.02080, lng: 76.96780, street: 'Sathyamangalam Road Corridor', zone: 'tunnel', speedLimit: 48, maneuver: 'Flyover Underpass Transit (200Hz INS Active)' },
+      { lat: 11.02190, lng: 76.96860, street: 'GP North Ramp Exit', zone: 'recovering', speedLimit: 40, maneuver: 'Exiting Flyover Deck toward 100 Feet Rd' },
+      { lat: 11.02380, lng: 76.96400, street: '100 Feet Road', zone: 'open', speedLimit: 45, maneuver: 'Continue West on 100 Feet Rd' },
+      { lat: 11.02180, lng: 76.95850, street: 'Cross Cut Road Hub', zone: 'urban-canyon', speedLimit: 30, maneuver: 'Turn Left onto Cross Cut Rd' },
+      { lat: 11.01820, lng: 76.95710, street: 'Brookefields Mall Arterial', zone: 'open', speedLimit: 40, maneuver: 'Arriving at Destination' }
     ]
   },
   {
-    id: 'nyc-midtown',
-    name: 'New York Park Ave Underpass',
-    shortName: 'New York',
-    destination: 'Midtown East via Park Ave Tunnel',
-    center: [40.7525, -73.9772],
-    zoom: 16,
+    id: 'cbe-avinashi',
+    name: 'Coimbatore — Avinashi Road Elevated Corridor (SH 52)',
+    shortName: 'Avinashi Rd, CBE',
+    state: 'Tamil Nadu',
+    destination: 'Coimbatore Airport (CJB) Corridor',
+    center: [11.0250, 77.0100],
+    zoom: 15,
+    roadPath: [
+      // Avinashi Road Linear Centerline
+      [11.01250, 76.98220], // Lakshmi Mills Junction
+      [11.01450, 76.98650],
+      [11.01650, 76.99050],
+      [11.01820, 76.99450], // Nava India Signal
+      [11.02050, 76.99950],
+      [11.02250, 77.00350],
+      [11.02380, 77.00680], // Peelamedu Elevated Expressway Shadow (GNSS Outage begins)
+      [11.02550, 77.01050],
+      [11.02650, 77.01350], // PSG Tech Main Gate Underpass
+      [11.02800, 77.01750],
+      [11.02980, 77.02250], // Hope College Under-Deck
+      [11.03150, 77.02650],
+      [11.03350, 77.03100], // Fun Republic Mall
+      [11.03550, 77.03600],
+      [11.03780, 77.04250], // KMCH & Coimbatore Airport (CJB) Road
+      // Smooth return loop
+      [11.03550, 77.03600],
+      [11.03150, 77.02650],
+      [11.02650, 77.01350],
+      [11.02050, 76.99950],
+      [11.01250, 76.98220]
+    ],
     waypoints: [
-      { lat: 40.7450, lng: -73.9830, street: 'Park Avenue South', zone: 'open', speedLimit: 45, maneuver: 'Head North on Park Ave South' },
-      { lat: 40.7485, lng: -73.9805, street: 'Park Ave / E 34th St', zone: 'urban-canyon', speedLimit: 35, maneuver: 'Approaching High-Rise Canyon' },
-      { lat: 40.7510, lng: -73.9785, street: 'Park Ave Underpass Portal', zone: 'tunnel', speedLimit: 50, maneuver: 'Enter Sub-surface Underpass (GNSS Lost)' },
-      { lat: 40.7535, lng: -73.9765, street: 'Grand Central Viaduct Tunnel', zone: 'tunnel', speedLimit: 50, maneuver: 'Continue under Grand Central (200Hz INS)' },
-      { lat: 40.7555, lng: -73.9750, street: 'Viaduct North Portal', zone: 'recovering', speedLimit: 40, maneuver: 'Exit Viaduct onto Upper Park Ave' },
-      { lat: 40.7580, lng: -73.9730, street: 'Park Ave / E 48th St', zone: 'urban-canyon', speedLimit: 40, maneuver: 'Turn Left onto 48th St' },
-      { lat: 40.7595, lng: -73.9770, street: 'Madison Avenue', zone: 'open', speedLimit: 45, maneuver: 'Head South on Madison Ave' },
-      { lat: 40.7520, lng: -73.9830, street: '5th Avenue', zone: 'open', speedLimit: 40, maneuver: 'Continue on 5th Ave' },
-      { lat: 40.7450, lng: -73.9830, street: 'Park Avenue South', zone: 'open', speedLimit: 45, maneuver: 'Arriving at Destination' }
+      { lat: 11.01250, lng: 76.98220, street: 'Lakshmi Mills Junction', zone: 'open', speedLimit: 50, maneuver: 'Head East on Avinashi Road' },
+      { lat: 11.01820, lng: 76.99450, street: 'Nava India Canyon', zone: 'urban-canyon', speedLimit: 45, maneuver: 'Passing Commercial High-Rise Zone' },
+      { lat: 11.02380, lng: 77.00680, street: 'Peelamedu Elevated Deck Shadow', zone: 'tunnel', speedLimit: 55, maneuver: 'Elevated Deck Shadow (Zero GNSS Lock)' },
+      { lat: 11.02650, lng: 77.01350, street: 'PSG Tech Underpass Zone', zone: 'tunnel', speedLimit: 60, maneuver: 'Dead Reckoning Trajectory Active' },
+      { lat: 11.02980, lng: 77.02250, street: 'Hope College Sub-Level Portal', zone: 'recovering', speedLimit: 50, maneuver: 'Signal Restoring near Hope College' },
+      { lat: 11.03780, lng: 77.04250, street: 'Coimbatore Airport (CJB) Road', zone: 'open', speedLimit: 60, maneuver: 'Turn Right toward Airport Terminal' }
     ]
   },
   {
-    id: 'tokyo-shinjuku',
-    name: 'Tokyo Shutoko Tunnel C2',
-    shortName: 'Tokyo',
-    destination: 'Shutoko Underground Route C2',
-    center: [35.6905, 139.6995],
+    id: 'cbe-rspuram',
+    name: 'Coimbatore — RS Puram & DB Road Corridor',
+    shortName: 'RS Puram, CBE',
+    state: 'Tamil Nadu',
+    destination: 'Thadagam Road via DB Road',
+    center: [11.0110, 76.9490],
     zoom: 16,
+    roadPath: [
+      // Diwan Bahadur (DB) Road Centerline
+      [11.00550, 76.95350], // DB Road South Entry
+      [11.00750, 76.95200],
+      [11.00950, 76.95050], // Flower Market Roundabout
+      [11.01150, 76.94900], // RS Puram Head Post Office
+      [11.01350, 76.94750], // Cowley Brown Road Underpass Shadow
+      [11.01550, 76.94600], // Dense commercial canopy
+      [11.01750, 76.94450], // Thadagam Road Junction
+      // Turn onto Thadagam Road
+      [11.01850, 76.94250],
+      [11.01750, 76.93950], // TNAU Campus Gate
+      [11.01450, 76.94150],
+      [11.01050, 76.94550],
+      [11.00550, 76.95350]
+    ],
     waypoints: [
-      { lat: 35.6850, lng: 139.6910, street: 'Koshu Kaido Highway', zone: 'open', speedLimit: 60, maneuver: 'Head East on Koshu Kaido' },
-      { lat: 35.6880, lng: 139.6940, street: 'Nishi-Shinjuku Skyscraper Zone', zone: 'urban-canyon', speedLimit: 45, maneuver: 'Approaching High-Rise Canyon' },
-      { lat: 35.6900, lng: 139.6970, street: 'Shinjuku Underground Portal', zone: 'tunnel', speedLimit: 60, maneuver: 'Enter Shutoko Subterranean Expressway' },
-      { lat: 35.6920, lng: 139.7010, street: 'Shutoko Tunnel Route C2', zone: 'tunnel', speedLimit: 70, maneuver: 'Tunnel Cruising (Dead Reckoning Active)' },
-      { lat: 35.6940, lng: 139.7040, street: 'Kabukicho Sub-Surface', zone: 'tunnel', speedLimit: 65, maneuver: 'Keep right toward East Portal' },
-      { lat: 35.6960, lng: 139.7070, street: 'Shinjuku East Portal', zone: 'recovering', speedLimit: 50, maneuver: 'Exit Tunnel onto Meiji Dori' },
-      { lat: 35.6930, lng: 139.7090, street: 'Meiji Dori Avenue', zone: 'open', speedLimit: 50, maneuver: 'Continue South on Meiji Dori' },
-      { lat: 35.6870, lng: 139.7030, street: 'Shinjuku Gyoen Expressway', zone: 'open', speedLimit: 55, maneuver: 'Return via Expressway' },
-      { lat: 35.6850, lng: 139.6910, street: 'Koshu Kaido Highway', zone: 'open', speedLimit: 60, maneuver: 'Arriving at Destination' }
+      { lat: 11.00550, lng: 76.95350, street: 'DB Road South', zone: 'open', speedLimit: 35, maneuver: 'Head North on Diwan Bahadur Rd' },
+      { lat: 11.01150, lng: 76.94900, street: 'RS Puram Post Office Signal', zone: 'urban-canyon', speedLimit: 30, maneuver: 'Approaching Dense Commercial Zone' },
+      { lat: 11.01350, lng: 76.94750, street: 'Cowley Brown Road Shadow', zone: 'tunnel', speedLimit: 40, maneuver: 'Multipath Shadow Outage (INS Engaged)' },
+      { lat: 11.01750, lng: 76.94450, street: 'Thadagam Road Junction', zone: 'recovering', speedLimit: 35, maneuver: 'Reacquiring Satellite Constellation' },
+      { lat: 11.01750, lng: 76.93950, street: 'TNAU Campus Gate', zone: 'open', speedLimit: 45, maneuver: 'Arriving at Destination' }
     ]
   }
 ];
@@ -99,140 +167,189 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
   const { theme } = useTheme();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const carMarkerRef = useRef<L.Marker | null>(null);
   const liveTrailRef = useRef<L.Polyline | null>(null);
-  const covarianceCircleRef = useRef<L.Circle | null>(null);
+  const buildingsLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [activeCityId, setActiveCityId] = useState<string>('sf-downtown');
+  const [activeCityId, setActiveCityId] = useState<string>('cbe-gandhipuram');
+  const [viewAngle, setViewAngle] = useState<MapViewAngle>('3d-cockpit');
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0.08);
   const [simSpeed, setSimSpeed] = useState(1);
   const [manualOutage, setManualOutage] = useState<boolean | null>(null);
   const [cameraFollow, setCameraFollow] = useState(true);
-  const [currentStreet, setCurrentStreet] = useState('Van Ness Avenue');
-  const [currentManeuver, setCurrentManeuver] = useState('Head North on Van Ness Ave');
-  const [speedLimit, setSpeedLimit] = useState(45);
+  const [show3DBuildings, setShow3DBuildings] = useState(true);
+  const [currentStreet, setCurrentStreet] = useState('Dr. Nanjappa Road, Coimbatore');
+  const [currentManeuver, setCurrentManeuver] = useState('Head North on Dr. Nanjappa Rd');
+  const [speedLimit, setSpeedLimit] = useState(40);
 
   const [telemetry, setTelemetry] = useState({
     gnssStatus: 'LOCKED' as GNSSState,
     drMode: 'STANDBY' as DRMode,
-    speedKmh: 46.2,
-    headingDeg: 358.4,
+    speedKmh: 42.4,
+    headingDeg: 15.0,
     positionErrorM: 0.7,
     imuRateHz: 200,
     aiConfidencePct: 99.4,
     satellites: 28,
     covariance: 0.32,
-    lat: 37.7945,
-    lng: -122.4228
+    lat: 11.0145,
+    lng: 76.9632
   });
 
-  const currentCity = GOOGLE_MAPS_ROUTES.find((c) => c.id === activeCityId) || GOOGLE_MAPS_ROUTES[0];
+  const currentCity = COIMBATORE_NAVIGATION_ROUTES.find((c) => c.id === activeCityId) || COIMBATORE_NAVIGATION_ROUTES[0];
 
-  // Spline interpolation between real-world street waypoints
-  const getInterpolatedPosition = (t: number) => {
-    const wps = currentCity.waypoints;
-    const count = wps.length;
-    const scaledT = t * (count - 1);
-    const index = Math.min(Math.floor(scaledT), count - 2);
-    const localT = scaledT - index;
+  // Exact Linear Road Snapping (Lat/Lng strictly along road centerline vectors)
+  const getRoadSnappedPosition = (t: number) => {
+    const path = currentCity.roadPath;
+    const totalSegments = path.length - 1;
+    const clampedT = Math.max(0, Math.min(0.9999, t));
+    const scaledT = clampedT * totalSegments;
+    const segmentIdx = Math.floor(scaledT);
+    const localT = scaledT - segmentIdx;
 
-    const p0 = wps[Math.max(0, index - 1)];
-    const p1 = wps[index];
-    const p2 = wps[index + 1];
-    const p3 = wps[Math.min(count - 1, index + 2)];
+    const p1 = path[segmentIdx]; // [lat, lng]
+    const p2 = path[segmentIdx + 1]; // [lat, lng]
 
-    const t2 = localT * localT;
-    const t3 = t2 * localT;
+    const lat = p1[0] + (p2[0] - p1[0]) * localT;
+    const lng = p1[1] + (p2[1] - p1[1]) * localT;
 
-    const lat = 0.5 * (
-      (2 * p1.lat) +
-      (-p0.lat + p2.lat) * localT +
-      (2 * p0.lat - 5 * p1.lat + 4 * p2.lat - p3.lat) * t2 +
-      (-p0.lat + 3 * p1.lat - 3 * p2.lat + p3.lat) * t3
-    );
-
-    const lng = 0.5 * (
-      (2 * p1.lng) +
-      (-p0.lng + p2.lng) * localT +
-      (2 * p0.lng - 5 * p1.lng + 4 * p2.lng - p3.lng) * t2 +
-      (-p0.lng + 3 * p1.lng - 3 * p2.lng + p3.lng) * t3
-    );
-
-    const dLat = p2.lat - p1.lat;
-    const dLng = p2.lng - p1.lng;
+    // Calculate heading angle from road vector
+    const dLat = p2[0] - p1[0];
+    const dLng = p2[1] - p1[1];
     const heading = ((Math.atan2(dLng, dLat) * (180 / Math.PI)) + 360) % 360;
 
-    return { lat, lng, heading, currentWp: p1 };
+    // Closest waypoint for maneuver info
+    const wps = currentCity.waypoints;
+    const wpIdx = Math.min(Math.floor(clampedT * wps.length), wps.length - 1);
+    const currentWp = wps[wpIdx];
+
+    return { lat, lng, heading, currentWp };
   };
 
-  // Initialize Real-Time Leaflet Map in Monochrome High-Contrast
+  // Generate 3D Extrusion Buildings along the Coimbatore road corridor
+  const create3DBuildingPolygons = (map: L.Map, isDark: boolean) => {
+    const buildingGroup = L.layerGroup();
+    const path = currentCity.roadPath;
+
+    path.forEach((pt, i) => {
+      if (i % 2 === 0) {
+        const offsetLat = (Math.sin(i * 1.6) * 0.0007) + 0.0006;
+        const offsetLng = (Math.cos(i * 1.6) * 0.0007) + 0.0006;
+        const heightM = 16 + (i % 5) * 8; // 16m to 48m heights
+
+        const bLat = pt[0] + offsetLat;
+        const bLng = pt[1] + offsetLng;
+        const size = 0.00045;
+
+        // 1. Isometric Building Base Shadow
+        const basePolygon: [number, number][] = [
+          [bLat, bLng],
+          [bLat + size, bLng],
+          [bLat + size, bLng + size],
+          [bLat, bLng + size]
+        ];
+
+        L.polygon(basePolygon, {
+          color: isDark ? '#FFFFFF' : '#000000',
+          weight: 1,
+          opacity: isDark ? 0.35 : 0.25,
+          fillColor: isDark ? '#141420' : '#E2E2EC',
+          fillOpacity: isDark ? 0.85 : 0.75
+        }).addTo(buildingGroup);
+
+        // 2. Extruded Top Roof
+        const roofShift = heightM * 0.000006;
+        const roofPolygon: [number, number][] = [
+          [bLat + roofShift, bLng + roofShift],
+          [bLat + size + roofShift, bLng + roofShift],
+          [bLat + size + roofShift, bLng + size + roofShift],
+          [bLat + roofShift, bLng + size + roofShift]
+        ];
+
+        L.polygon(roofPolygon, {
+          color: isDark ? '#FFFFFF' : '#000000',
+          weight: 1.2,
+          opacity: isDark ? 0.6 : 0.45,
+          fillColor: isDark ? '#222232' : '#C8C8D8',
+          fillOpacity: isDark ? 0.95 : 0.85
+        }).addTo(buildingGroup);
+
+        // 3. Wall Lines connecting Base to Roof
+        for (let v = 0; v < 4; v++) {
+          L.polyline([basePolygon[v], roofPolygon[v]], {
+            color: isDark ? '#FFFFFF' : '#000000',
+            weight: 0.8,
+            opacity: isDark ? 0.4 : 0.3
+          }).addTo(buildingGroup);
+        }
+      }
+    });
+
+    buildingGroup.addTo(map);
+    buildingsLayerRef.current = buildingGroup;
+  };
+
+  // Initialize Map strictly snapped to Coimbatore roads
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center: currentCity.center,
-        zoom: currentCity.zoom,
-        zoomControl: false,
-        attributionControl: false
-      });
-
-      const isDark = theme === 'dark';
-      const tileUrl = isDark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-
-      const tileLayer = L.tileLayer(tileUrl, {
-        maxZoom: 19,
-        subdomains: 'abcd'
-      }).addTo(map);
-
-      tileLayerRef.current = tileLayer;
-
-      // Real-time Live Trajectory Trail (High-Contrast White / Black)
-      const liveTrail = L.polyline([], {
-        color: isDark ? '#FFFFFF' : '#000000',
-        weight: 5,
-        opacity: 0.95,
-        lineCap: 'round',
-        lineJoin: 'round'
-      }).addTo(map);
-      liveTrailRef.current = liveTrail;
-
-      // Covariance Uncertainty Error Halo
-      const covCircle = L.circle(currentCity.center, {
-        radius: 10,
-        color: isDark ? '#FFFFFF' : '#000000',
-        weight: 1.5,
-        dashArray: '3, 3',
-        fillColor: isDark ? '#FFFFFF' : '#000000',
-        fillOpacity: 0.12
-      }).addTo(map);
-      covarianceCircleRef.current = covCircle;
-
-      // High-Contrast Monochrome Navigation Arrow Puck Marker
-      const carIcon = L.divIcon({
-        className: 'gmaps-nav-marker',
-        html: `
-          <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-            <div id="gmaps-beam" style="position: absolute; width: 30px; height: 30px; border-radius: 50%; background: ${isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)'}; filter: blur(4px);"></div>
-            <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; background: ${isDark ? '#FFFFFF' : '#000000'}; border: 2.5px solid ${isDark ? '#000000' : '#FFFFFF'}; box-shadow: 0 3px 12px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
-              <svg id="gmaps-arrow" width="12" height="12" viewBox="0 0 24 24" style="transform-origin: center; transform: rotate(0deg); transition: transform 0.08s linear;">
-                <polygon points="12 2 22 20 12 16 2 20 12 2" fill="${isDark ? '#000000' : '#FFFFFF'}" />
-              </svg>
-            </div>
-          </div>
-        `,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
-      });
-
-      const carMarker = L.marker(currentCity.center, { icon: carIcon }).addTo(map);
-      carMarkerRef.current = carMarker;
-      mapInstanceRef.current = map;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
     }
+
+    const isDark = theme === 'dark';
+    const map = L.map(mapContainerRef.current, {
+      center: currentCity.center,
+      zoom: currentCity.zoom,
+      zoomControl: false,
+      attributionControl: false
+    });
+
+    // Official OpenStreetMap High-Resolution Vector Tiles (Zero Watermark / Zero API Key required)
+    const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    L.tileLayer(tileUrl, { 
+      maxZoom: 19,
+      className: isDark ? 'dark-map-tiles' : ''
+    }).addTo(map);
+
+    // 3D Building Extrusion Layer
+    if (show3DBuildings) {
+      create3DBuildingPolygons(map, isDark);
+    }
+
+    // Dynamic Live Trajectory Trail
+    const liveTrail = L.polyline([], {
+      color: isDark ? '#FFFFFF' : '#000000',
+      weight: 5,
+      opacity: 0.95,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+    liveTrailRef.current = liveTrail;
+
+    // High-Contrast 3D Navigation Arrow Puck Marker
+    const carIcon = L.divIcon({
+      className: 'gmaps-nav-marker',
+      html: `
+        <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: ${isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)'}; filter: blur(4px);"></div>
+          <div style="position: relative; width: 28px; height: 28px; border-radius: 50%; background: ${isDark ? '#FFFFFF' : '#000000'}; border: 2.5px solid ${isDark ? '#000000' : '#FFFFFF'}; box-shadow: 0 4px 14px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
+            <svg id="cbe-nav-arrow" width="14" height="14" viewBox="0 0 24 24" style="transform-origin: center; transform: rotate(0deg); transition: transform 0.08s linear;">
+              <polygon points="12 2 22 20 12 16 2 20 12 2" fill="${isDark ? '#000000' : '#FFFFFF'}" />
+            </svg>
+          </div>
+        </div>
+      `,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+
+    const marker = L.marker(currentCity.center, { icon: carIcon }).addTo(map);
+    carMarkerRef.current = marker;
+    mapInstanceRef.current = map;
 
     return () => {
       if (mapInstanceRef.current) {
@@ -240,23 +357,7 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
         mapInstanceRef.current = null;
       }
     };
-  }, [activeCityId]);
-
-  // Update Tile Theme when user toggles Dark/Light
-  useEffect(() => {
-    if (!tileLayerRef.current) return;
-    const isDark = theme === 'dark';
-    const newUrl = isDark
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-    tileLayerRef.current.setUrl(newUrl);
-
-    if (liveTrailRef.current) {
-      liveTrailRef.current.setStyle({
-        color: isDark ? '#FFFFFF' : '#000000'
-      });
-    }
-  }, [theme]);
+  }, [activeCityId, theme, show3DBuildings]);
 
   // Real-time animation driver
   useEffect(() => {
@@ -269,7 +370,7 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
 
       if (isPlaying) {
         setProgress((prev) => {
-          const next = prev + (0.022 * simSpeed * delta);
+          const next = prev + (0.016 * simSpeed * delta);
           return next >= 1 ? 0 : next;
         });
       }
@@ -281,11 +382,10 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     return () => cancelAnimationFrame(animId);
   }, [isPlaying, simSpeed]);
 
-  // Real-time Position & Navigation calculations
+  // Position calculation strictly along the road path
   useEffect(() => {
-    const pos = getInterpolatedPosition(progress);
-    const isTunnel = pos.currentWp.zone === 'tunnel' || (progress >= 0.32 && progress <= 0.68);
-    const isDark = theme === 'dark';
+    const pos = getRoadSnappedPosition(progress);
+    const isTunnel = pos.currentWp.zone === 'tunnel' || (progress >= 0.20 && progress <= 0.55);
 
     let gnss: GNSSState = 'LOCKED';
     let dr: DRMode = 'STANDBY';
@@ -293,24 +393,24 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     let sats = 28;
     let conf = 99.4;
     let cov = 0.32;
-    let speed = pos.currentWp.speedLimit + Math.sin(progress * 25) * 3.5;
+    let speed = pos.currentWp.speedLimit + Math.sin(progress * 25) * 2.5;
 
     if (manualOutage === true || (manualOutage === null && isTunnel)) {
       gnss = 'LOST';
       dr = 'ENGAGED';
-      const fraction = manualOutage === true ? 0.6 : (progress - 0.32) / 0.36;
-      posErr = 1.1 + fraction * 1.6;
+      const fraction = manualOutage === true ? 0.6 : (progress - 0.20) / 0.35;
+      posErr = 1.1 + fraction * 1.5;
       sats = 0;
       conf = 98.2 - fraction * 2.0;
       cov = 1.2 + fraction * 1.5;
-      speed = Math.max(40, speed - 4);
+      speed = Math.max(35, speed - 3);
     } else if (manualOutage === null && pos.currentWp.zone === 'urban-canyon') {
       gnss = 'DEGRADING';
       dr = 'STANDBY';
-      posErr = 1.3;
+      posErr = 1.2;
       sats = 6;
-      conf = 95.8;
-      cov = 0.68;
+      conf = 96.0;
+      cov = 0.65;
     } else if (manualOutage === null && pos.currentWp.zone === 'recovering') {
       gnss = 'RECOVERING';
       dr = 'CONVERGING';
@@ -342,51 +442,32 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
       onStatusChange(gnss);
     }
 
-    // Update Marker position & arrow heading
+    // Update marker location & rotate arrow to exact road heading
     if (carMarkerRef.current) {
       carMarkerRef.current.setLatLng([pos.lat, pos.lng]);
-      const arrowElem = document.getElementById('gmaps-arrow');
-      const beamElem = document.getElementById('gmaps-beam');
+      const arrowElem = document.getElementById('cbe-nav-arrow');
       if (arrowElem) {
         arrowElem.style.transform = `rotate(${pos.heading}deg)`;
       }
-      if (beamElem) {
-        beamElem.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)';
-      }
     }
 
-    // Dynamic Live History Trail
+    // Dynamic Trail strictly along previous road segments
     if (liveTrailRef.current) {
-      const trailPoints: [number, number][] = [];
-      const step = 0.006;
-      for (let t = Math.max(0, progress - 0.20); t <= progress; t += step) {
-        const pt = getInterpolatedPosition(t);
-        trailPoints.push([pt.lat, pt.lng]);
+      const trailCoords: [number, number][] = [];
+      const step = 0.005;
+      for (let t = Math.max(0, progress - 0.25); t <= progress; t += step) {
+        const pt = getRoadSnappedPosition(t);
+        trailCoords.push([pt.lat, pt.lng]);
       }
-      trailPoints.push([pos.lat, pos.lng]);
-      liveTrailRef.current.setLatLngs(trailPoints);
-      liveTrailRef.current.setStyle({
-        color: isDark ? '#FFFFFF' : '#000000',
-        dashArray: isTunnel ? '6, 6' : undefined
-      });
+      trailCoords.push([pos.lat, pos.lng]);
+      liveTrailRef.current.setLatLngs(trailCoords);
     }
 
-    // Update Uncertainty Error Halo
-    if (covarianceCircleRef.current) {
-      covarianceCircleRef.current.setLatLng([pos.lat, pos.lng]);
-      const radiusM = isTunnel ? 22 + (posErr * 8) : 10;
-      covarianceCircleRef.current.setRadius(radiusM);
-      covarianceCircleRef.current.setStyle({
-        color: isDark ? '#FFFFFF' : '#000000',
-        fillColor: isDark ? '#FFFFFF' : '#000000'
-      });
-    }
-
-    // Auto-center camera on vehicle
+    // Camera follow
     if (cameraFollow && mapInstanceRef.current) {
-      mapInstanceRef.current.panTo([pos.lat, pos.lng], { animate: true, duration: 0.1 });
+      mapInstanceRef.current.panTo([pos.lat, pos.lng], { animate: true, duration: 0.15 });
     }
-  }, [progress, manualOutage, cameraFollow, onStatusChange, theme]);
+  }, [progress, manualOutage, cameraFollow, onStatusChange]);
 
   const handleCityChange = (cityId: string) => {
     setActiveCityId(cityId);
@@ -394,13 +475,35 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     setManualOutage(null);
   };
 
+  // Compute 3D Perspective CSS Transform based on active view angle
+  const getMapTransformStyle = () => {
+    if (viewAngle === '3d-cockpit') {
+      return {
+        transform: 'perspective(900px) rotateX(46deg) scale(1.16)',
+        transformOrigin: '50% 82%',
+        transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+      };
+    }
+    if (viewAngle === '3d-isometric') {
+      return {
+        transform: 'perspective(1000px) rotateX(32deg) rotateY(-8deg) scale(1.10)',
+        transformOrigin: '50% 50%',
+        transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+      };
+    }
+    return {
+      transform: 'none',
+      transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+    };
+  };
+
   return (
     <div className="relative w-full rounded-2xl sm:rounded-3xl bg-neutral-100 dark:bg-[#0D0D11] border border-neutral-300 dark:border-neutral-800 shadow-xl overflow-hidden transition-all">
       
-      {/* Navigation Header Bar (Clean Stack on Mobile) */}
+      {/* Top Banner (Turn Maneuver + Coimbatore Circuits) */}
       <div className="p-3.5 sm:p-5 bg-white dark:bg-[#121216] border-b border-neutral-300 dark:border-neutral-800 relative z-30 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         
-        {/* Left: Turn-by-Turn Maneuver Pill */}
+        {/* Left: Turn-by-Turn Maneuver */}
         <div className="flex items-center gap-3">
           <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-sm shrink-0">
             <CompassIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -417,16 +520,16 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
           </div>
         </div>
 
-        {/* Right: City Selector & Status Badge */}
+        {/* Right: Coimbatore Circuit Tabs + 3D View Angle Mode Switcher & GNSS Badge */}
         <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-neutral-200 dark:border-neutral-800">
           
-          {/* City Selector */}
-          <div className="flex items-center gap-1 p-0.5 sm:p-1 rounded-xl bg-neutral-100 dark:bg-black/50 border border-neutral-300 dark:border-neutral-800 text-[11px] sm:text-xs font-mono">
-            {GOOGLE_MAPS_ROUTES.map((city) => (
+          {/* Circuit Tabs (Coimbatore focus) */}
+          <div className="flex items-center gap-1 p-0.5 sm:p-1 rounded-xl bg-neutral-100 dark:bg-black/50 border border-neutral-300 dark:border-neutral-800 text-[11px] sm:text-xs font-mono overflow-x-auto max-w-full">
+            {COIMBATORE_NAVIGATION_ROUTES.map((city) => (
               <button
                 key={city.id}
                 onClick={() => handleCityChange(city.id)}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all font-semibold ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all whitespace-nowrap font-semibold ${
                   activeCityId === city.id
                     ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
@@ -436,6 +539,61 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
               </button>
             ))}
           </div>
+
+          {/* 3D View Mode Angle Selector (3D Cockpit / 3D Isometric / 2D Overhead) */}
+          <div className="flex items-center gap-1 p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-xs font-mono">
+            <button
+              onClick={() => setViewAngle('3d-cockpit')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 font-semibold ${
+                viewAngle === '3d-cockpit'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm font-bold'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+              }`}
+              title="3D In-Cabin Driving Pitch Angle"
+            >
+              <EyeIcon className="w-3.5 h-3.5" />
+              <span>3D Cockpit</span>
+            </button>
+
+            <button
+              onClick={() => setViewAngle('3d-isometric')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 font-semibold ${
+                viewAngle === '3d-isometric'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm font-bold'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+              }`}
+              title="3D Isometric Vantage Angle"
+            >
+              <LayersIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">3D Iso</span>
+            </button>
+
+            <button
+              onClick={() => setViewAngle('2d')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 font-semibold ${
+                viewAngle === '2d'
+                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm font-bold'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+              }`}
+              title="2D Overhead Ortho View"
+            >
+              <span>2D Top</span>
+            </button>
+          </div>
+
+          {/* Toggle 3D Buildings Pill */}
+          <button
+            onClick={() => setShow3DBuildings(!show3DBuildings)}
+            className={`p-1.5 px-2.5 rounded-xl border text-xs font-mono font-semibold flex items-center gap-1.5 shadow-sm transition-all ${
+              show3DBuildings
+                ? 'bg-black text-white dark:bg-white dark:text-black border-transparent font-bold'
+                : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+            }`}
+            title="Toggle 3D Extrusion Building Heights"
+          >
+            <Building2Icon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">3D Buildings</span>
+          </button>
 
           {/* GNSS Status Badge */}
           <span
@@ -452,11 +610,20 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
         </div>
       </div>
 
-      {/* Real-time Leaflet Map Viewport */}
-      <div className="relative w-full h-[320px] sm:h-[450px]">
+      {/* Real-time Map Viewport with 3D Perspective Angles */}
+      <div className="relative w-full h-[360px] sm:h-[520px] overflow-hidden">
         
-        {/* Leaflet Map Div */}
-        <div ref={mapContainerRef} className="w-full h-full z-10" />
+        {/* 3D Atmospheric Sky Horizon Gradient when in 3D Mode */}
+        {viewAngle !== '2d' && (
+          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-neutral-900/60 dark:from-black/80 to-transparent pointer-events-none z-20" />
+        )}
+
+        {/* Map Container with 3D Matrix Perspective Angle */}
+        <div 
+          ref={mapContainerRef} 
+          style={getMapTransformStyle()}
+          className="w-full h-full z-10" 
+        />
 
         {/* Speedometer Gauge (Bottom Left) */}
         <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-center shadow-lg z-20 min-w-[70px] sm:min-w-[90px]">
@@ -467,12 +634,14 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
           <div className="text-[8px] sm:text-[10px] font-mono text-neutral-500 font-bold">KM/H</div>
         </div>
 
-        {/* High-Contrast Telemetry Card (Top Left - Compact on Mobile) */}
+        {/* High-Contrast Telemetry Card (Top Left) */}
         <div className="absolute top-3 left-3 sm:top-5 sm:left-5 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[10px] sm:text-[11px] font-mono space-y-1.5 sm:space-y-3 shadow-lg max-w-[160px] sm:max-w-[240px] z-20">
           <div className="flex items-center justify-between pb-1 sm:pb-2 border-b border-neutral-200 dark:border-neutral-800">
-            <span className="text-neutral-500 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider">Telemetry</span>
+            <span className="text-neutral-500 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider">
+              {viewAngle === '3d-cockpit' ? '3D Cockpit' : viewAngle === '3d-isometric' ? '3D Isometric' : '2D Overhead'}
+            </span>
             <span className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700">
-              200Hz
+              200Hz INS
             </span>
           </div>
           
@@ -504,21 +673,14 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
           </div>
         </div>
 
-        {/* Live Status Legend (Hidden on very small screens to avoid clutter) */}
-        <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[9px] sm:text-[10px] font-mono space-y-1 hidden sm:block shadow-lg z-20">
-          <div className="text-neutral-500 text-[8px] uppercase tracking-wider font-semibold">Live Mode</div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-1 rounded-full bg-black dark:bg-white"></span>
-            <span className="text-neutral-800 dark:text-neutral-200">GPS Locked</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-1 rounded-full bg-neutral-400 border border-dashed border-neutral-600"></span>
-            <span className="text-neutral-800 dark:text-neutral-200">Dead Reckoning</span>
-          </div>
+        {/* Live Coordinate Footer on Map */}
+        <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 p-2 sm:p-2.5 rounded-xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[9px] sm:text-[10px] font-mono shadow-lg z-20 hidden xs:block">
+          <span className="text-neutral-500">COIMBATORE GPS: </span>
+          <span className="font-bold text-neutral-950 dark:text-white">{telemetry.lat.toFixed(4)}° N, {telemetry.lng.toFixed(4)}° E</span>
         </div>
       </div>
 
-      {/* Navigation Control Dock (Structured Mobile Layout) */}
+      {/* Navigation Control Dock */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 bg-white dark:bg-[#121216] border-t border-neutral-300 dark:border-neutral-800 relative z-30">
         
         {/* Playback action buttons */}
@@ -552,7 +714,7 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
             }`}
           >
             <CrosshairIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            <span className="hidden xs:inline">{cameraFollow ? 'Follow' : 'Free Pan'}</span>
+            <span className="hidden xs:inline">{cameraFollow ? 'Follow Vehicle' : 'Free Pan'}</span>
           </button>
 
           {/* Force Outage Toggle */}
@@ -577,7 +739,7 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
               type="range"
               min="0"
               max="1"
-              step="0.002"
+              step="0.001"
               value={progress}
               onChange={(e) => {
                 setProgress(parseFloat(e.target.value));
