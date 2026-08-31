@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CrosshairIcon, SunIcon, MoonIcon, MenuIcon, XIcon, ArrowUpRightIcon, TerminalIcon } from './Icons';
+import { SunIcon, MoonIcon, MenuIcon, XIcon, ArrowUpRightIcon, TerminalIcon } from './Icons';
 import { detectDevice } from '../lib/deviceDetection';
 import { useTheme } from '../lib/theme';
 
@@ -32,25 +32,19 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
         isScrolled
-          ? 'bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-800 py-2.5 sm:py-3.5 shadow-sm'
-          : 'bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50 py-3 sm:py-5'
+          ? 'bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-800 py-1.5 sm:py-2 shadow-sm'
+          : 'bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50 py-1.5 sm:py-2.5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between">
         
-        {/* Brand Wordmark & Glyph */}
-        <a href="#" className="flex items-center gap-2.5 group shrink-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-black text-white dark:bg-white dark:text-black flex items-center justify-center border border-neutral-700 dark:border-neutral-300 group-hover:scale-105 transition-transform shadow-sm">
-            <CrosshairIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-xs sm:text-sm tracking-widest text-neutral-950 dark:text-white uppercase font-mono leading-none">
-              IDR
-            </span>
-            <span className="text-[9px] sm:text-[10px] tracking-wider text-neutral-500 dark:text-neutral-400 uppercase mt-0.5 font-mono">
-              Dead Reckoning
-            </span>
-          </div>
+        {/* Brand Logo & Wordmark (Moved slightly left with large prominent scale) */}
+        <a href="#" className="flex items-center group shrink-0 -ml-1.5 sm:-ml-3 md:-ml-4" aria-label="IDR Home">
+          <img
+            src={theme === 'dark' ? '/idr-logo-light.png' : '/idr-logo-dark.png'}
+            alt="IDR - Intelligent Dead Reckoning"
+            className="h-10 sm:h-12 md:h-14 lg:h-15 w-auto max-w-[220px] sm:max-w-[300px] md:max-w-[340px] object-contain transition-all group-hover:scale-105 drop-shadow-sm -my-1"
+          />
         </a>
 
         {/* Desktop Nav Links */}

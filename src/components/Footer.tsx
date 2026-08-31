@@ -1,7 +1,10 @@
 import React from 'react';
-import { CrosshairIcon, ArrowUpRightIcon } from './Icons';
+import { ArrowUpRightIcon } from './Icons';
+import { useTheme } from '../lib/theme';
 
 export const Footer: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
     <footer className="bg-neutral-100 dark:bg-black border-t border-neutral-200 dark:border-neutral-800 transition-colors py-16 text-xs font-mono text-neutral-600 dark:text-neutral-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -10,14 +13,13 @@ export const Footer: React.FC = () => {
           
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-black text-white dark:bg-white dark:text-black flex items-center justify-center shadow-sm">
-                <CrosshairIcon className="w-4 h-4" />
-              </div>
-              <div className="font-bold text-sm tracking-widest text-neutral-950 dark:text-white uppercase font-mono">
-                IDR // Dead Reckoning
-              </div>
-            </div>
+            <a href="#" className="inline-block" aria-label="IDR Home">
+              <img
+                src={theme === 'dark' ? '/idr-logo-light.png' : '/idr-logo-dark.png'}
+                alt="IDR - Intelligent Dead Reckoning"
+                className="h-12 sm:h-16 md:h-20 w-auto max-w-[340px] sm:max-w-[440px] object-contain hover:opacity-90 transition-all drop-shadow-md"
+              />
+            </a>
 
             <p className="text-xs text-neutral-500 max-w-sm leading-relaxed">
               Companion engineering platform for on-device smartphone dead reckoning. Maintaining continuous vehicle positioning when GNSS line-of-sight is lost.

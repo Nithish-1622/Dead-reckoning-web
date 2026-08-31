@@ -74,6 +74,15 @@
   filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(110%) grayscale(0.8);
 }
 
+/* Theme-Adaptive Logo Rendering */
+.dark img[src*="idr-logo-light"] {
+  mix-blend-mode: screen;
+}
+
+img[src*="idr-logo-dark"] {
+  mix-blend-mode: multiply;
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
