@@ -79,14 +79,14 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Right Controls */}
           <div className="hidden sm:flex items-center gap-2">
-            {/* Observatory Dashboard Route Button */}
+            {/* Live Dashboard Modal Route Button */}
             <button
               onClick={() => openDashboard('overview')}
-              aria-label="Open Observatory Platform"
+              aria-label="Open Live Dashboard"
               className="p-2 px-3.5 rounded-xl bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:opacity-90 transition-all flex items-center gap-1.5 text-xs font-mono font-bold shadow-sm active:scale-95"
             >
               <ServerIcon className="w-3.5 h-3.5" />
-              <span>Observatory</span>
+              <span>Live Dashboard</span>
             </button>
 
             {/* Icon-Only Theme Switcher */}
@@ -117,7 +117,7 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-1.5 sm:hidden">
             <button
               onClick={() => openDashboard('overview')}
-              aria-label="Open Observatory Platform"
+              aria-label="Open Live Dashboard"
               className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
             >
               <ServerIcon className="w-4 h-4 text-emerald-500" />
@@ -157,7 +157,7 @@ export const Navbar: React.FC = () => {
                 className="py-2.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-950 dark:text-white font-bold flex items-center gap-2 text-left"
               >
                 <ServerIcon className="w-4 h-4 text-emerald-500" />
-                <span>Open Observatory Dashboard</span>
+                <span>Open Live Dashboard</span>
               </button>
               <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">The Problem (Outages)</a>
               <a onClick={() => setMobileMenuOpen(false)} href="#technology" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">Technology & Sensors</a>
