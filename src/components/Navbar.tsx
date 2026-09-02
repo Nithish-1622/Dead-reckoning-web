@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SunIcon, MoonIcon, MenuIcon, XIcon, ArrowUpRightIcon, TerminalIcon, ServerIcon } from './Icons';
-import { detectDevice } from '../lib/deviceDetection';
+import { SunIcon, MoonIcon, MenuIcon, XIcon, TerminalIcon, ServerIcon } from './Icons';
 import { useTheme } from '../lib/theme';
 import { DevConsole } from './DevConsole/DevConsole';
 
@@ -21,7 +20,6 @@ export const Navbar: React.FC = () => {
     | 'security'
   >('overview');
   const { theme, toggleTheme } = useTheme();
-  const deviceType = detectDevice();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,17 +28,6 @@ export const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const getCtaLabel = () => {
-    if (deviceType === 'android-mobile') {
-      return { text: 'APK' };
-    } else if (deviceType === 'ios-mobile') {
-      return { text: 'iOS' };
-    }
-    return { text: 'Get Started' };
-  };
-
-  const cta = getCtaLabel();
 
   const openDashboard = (tab: typeof devConsoleTab = 'overview') => {
     setDevConsoleTab(tab);
@@ -69,23 +56,27 @@ export const Navbar: React.FC = () => {
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-mono font-medium text-neutral-600 dark:text-neutral-400">
-            <a href="#problem" className="hover:text-black dark:hover:text-white transition-colors">THE PROBLEM</a>
-            <a href="#technology" className="hover:text-black dark:hover:text-white transition-colors">TECHNOLOGY</a>
-            <a href="#pipeline" className="hover:text-black dark:hover:text-white transition-colors">ARCHITECTURE</a>
-            <a href="#monitoring" className="hover:text-black dark:hover:text-white transition-colors">OBSERVABILITY</a>
-            <a href="#performance" className="hover:text-black dark:hover:text-white transition-colors">BENCHMARKS</a>
+          <nav className="hidden lg:flex items-center gap-10 xl:gap-12 text-xs font-mono font-medium text-neutral-600 dark:text-neutral-400 tracking-wide">
+            <a href="#problem" className="hover:text-black dark:hover:text-white transition-colors py-1">THE PROBLEM</a>
+            <a href="#technology" className="hover:text-black dark:hover:text-white transition-colors py-1">TECHNOLOGY</a>
+            <a href="#pipeline" className="hover:text-black dark:hover:text-white transition-colors py-1">ARCHITECTURE</a>
+            <a href="#monitoring" className="hover:text-black dark:hover:text-white transition-colors py-1">OBSERVABILITY</a>
+            <a href="#performance" className="hover:text-black dark:hover:text-white transition-colors py-1">BENCHMARKS</a>
           </nav>
 
           {/* Desktop Right Controls */}
-          <div className="hidden sm:flex items-center gap-2">
-            {/* Live Dashboard Modal Route Button */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* Polished Glass Live Dashboard CTA Button */}
             <button
               onClick={() => openDashboard('overview')}
               aria-label="Open Live Dashboard"
-              className="p-2 px-3.5 rounded-xl bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:opacity-90 transition-all flex items-center gap-1.5 text-xs font-mono font-bold shadow-sm active:scale-95"
+              className="p-2 px-3.5 rounded-xl bg-gradient-to-b from-white/90 via-white/60 to-neutral-100/70 dark:from-white/[0.12] dark:via-white/[0.06] dark:to-white/[0.02] backdrop-blur-xl border border-neutral-300/80 dark:border-white/15 hover:border-neutral-400 dark:hover:border-white/30 text-neutral-900 dark:text-white transition-all flex items-center gap-2 text-xs font-mono font-bold shadow-xs hover:shadow-sm dark:shadow-[0_2px_16px_rgba(0,0,0,0.3)] active:scale-95 group"
             >
-              <ServerIcon className="w-3.5 h-3.5" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 dark:bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-emerald-400"></span>
+              </span>
+              <ServerIcon className="w-3.5 h-3.5 text-neutral-800 dark:text-neutral-200 group-hover:scale-105 transition-transform" />
               <span>Live Dashboard</span>
             </button>
 
@@ -102,15 +93,6 @@ export const Navbar: React.FC = () => {
                 <MoonIcon className="w-4 h-4 text-neutral-800" />
               )}
             </button>
-
-            {/* Device-aware Quick Download CTA */}
-            <a
-              href="#install"
-              className="p-2 px-4 rounded-xl bg-black text-white dark:bg-white dark:text-black hover:opacity-90 transition-all flex items-center gap-1.5 text-xs font-mono font-bold shadow-sm active:scale-95 ml-1"
-            >
-              <span>{cta.text}</span>
-              <ArrowUpRightIcon className="w-3 h-3" />
-            </a>
           </div>
 
           {/* Mobile Header Controls */}
@@ -118,9 +100,13 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => openDashboard('overview')}
               aria-label="Open Live Dashboard"
-              className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
+              className="p-2 rounded-xl bg-gradient-to-b from-white/90 to-neutral-100/80 dark:from-white/10 dark:to-white/5 backdrop-blur-xl border border-neutral-300/80 dark:border-white/15 text-neutral-900 dark:text-white flex items-center gap-1.5 shadow-xs"
             >
-              <ServerIcon className="w-4 h-4 text-emerald-500" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 dark:bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-emerald-400"></span>
+              </span>
+              <ServerIcon className="w-4 h-4" />
             </button>
 
             <button
@@ -130,13 +116,6 @@ export const Navbar: React.FC = () => {
             >
               {theme === 'dark' ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
             </button>
-
-            <a
-              href="#install"
-              className="inline-flex items-center px-3 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold font-mono"
-            >
-              {cta.text}
-            </a>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -154,9 +133,13 @@ export const Navbar: React.FC = () => {
             <nav className="flex flex-col space-y-2 text-xs font-mono text-neutral-700 dark:text-neutral-300">
               <button
                 onClick={() => openDashboard('overview')}
-                className="py-2.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-950 dark:text-white font-bold flex items-center gap-2 text-left"
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-b from-white/90 to-neutral-100/80 dark:from-white/10 dark:to-white/5 backdrop-blur-xl border border-neutral-300/80 dark:border-white/15 text-neutral-950 dark:text-white font-bold flex items-center gap-2 text-left shadow-xs"
               >
-                <ServerIcon className="w-4 h-4 text-emerald-500" />
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 dark:bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-emerald-400"></span>
+                </span>
+                <ServerIcon className="w-4 h-4" />
                 <span>Open Live Dashboard</span>
               </button>
               <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="py-2 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white">The Problem (Outages)</a>

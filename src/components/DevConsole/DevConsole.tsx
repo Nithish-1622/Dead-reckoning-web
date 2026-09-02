@@ -510,56 +510,60 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
     <div className="fixed inset-0 z-[100] w-full h-full min-h-screen bg-white dark:bg-[#06060A] flex flex-col overflow-hidden text-neutral-900 dark:text-neutral-100 animate-in fade-in duration-200">
       
       {/* Dynamic Top Control Header */}
-      <div className="p-4 sm:px-6 bg-white dark:bg-[#0D0D12] border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between gap-4 relative z-30 shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="px-3.5 sm:px-6 py-2.5 bg-white dark:bg-[#0A0A0E] border-b border-neutral-200 dark:border-neutral-800/80 flex items-center justify-between gap-3 relative z-30 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {/* Icon-Only Landing Page Navigation Button */}
           <button
             onClick={onClose}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-mono text-xs font-semibold flex items-center gap-1.5 border border-neutral-300 dark:border-neutral-700 transition-all active:scale-95"
-            title="Return to Landing Page"
+            className="p-1.5 sm:p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-800 transition-colors flex items-center justify-center shrink-0 active:scale-95"
+            title="Return to Landing Page (ESC)"
+            aria-label="Return to Landing Page"
           >
-            <span>←</span>
-            <span className="hidden sm:inline">Landing Page</span>
+            <span className="text-sm font-mono font-bold leading-none">←</span>
           </button>
 
-          <div className="h-5 w-px bg-neutral-300 dark:bg-neutral-700 hidden sm:block"></div>
+          <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-800 hidden sm:block"></div>
 
-          <div className="p-2 rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-sm">
-            <ServerIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-extrabold font-mono tracking-tight text-neutral-950 dark:text-white">
-                IDR MISSION CONTROL & LIVE DASHBOARD
-              </h2>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700">
-                {isAuthenticated ? 'AUTHENTICATED' : 'AUTH GATEWAY'}
-              </span>
+          {/* Structured & Compact Dashboard Brand Identity */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-1.5 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-950 shadow-xs shrink-0">
+              <ServerIcon className="w-3.5 h-3.5" />
             </div>
-            <p className="text-[11px] font-mono text-neutral-500 hidden sm:block">
-              Connected Backend: <code className="text-neutral-800 dark:text-neutral-300">{API_BASE_URL}</code>
-            </p>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xs sm:text-sm font-mono font-bold tracking-tight text-neutral-900 dark:text-neutral-100 truncate">
+                  IDR MISSION CONTROL & LIVE DASHBOARD
+                </h1>
+                <span className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700/80 shrink-0">
+                  {isAuthenticated ? 'AUTHENTICATED' : 'AUTH GATEWAY'}
+                </span>
+              </div>
+              <p className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 truncate">
+                Connected Backend: <code className="text-neutral-700 dark:text-neutral-300">{API_BASE_URL}</code>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2">
           {isAuthenticated && (
             <>
-              {/* Live Backend /health/live Connection Probe Button */}
+              {/* Live Backend /health/live Status Badge / Probe Button */}
               <button
                 onClick={handleVerifyHealth}
                 disabled={checkingHealth}
-                title="Probe backend /health/live endpoint status and latency"
-                className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold hover:border-black dark:hover:border-white transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                title="Probe backend /health/live status and latency"
+                className="h-8 px-2.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-xs font-mono font-medium flex items-center gap-2 transition-colors active:scale-95"
               >
                 <span
-                  className={`w-2.5 h-2.5 rounded-full ${
+                  className={`w-2 h-2 rounded-full ${
                     checkingHealth
                       ? 'bg-blue-500 animate-spin'
                       : backendOnline
                       ? 'bg-emerald-500 animate-ping'
                       : 'bg-amber-500'
                   }`}
-                ></span>
+                />
                 <span className="text-neutral-800 dark:text-neutral-200">
                   {checkingHealth
                     ? 'Testing...'
@@ -569,33 +573,35 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                 </span>
               </button>
 
-              {/* Sync Trigger */}
+              {/* Sync Trigger Button */}
               <button
                 onClick={fetchBackendData}
                 disabled={loading}
                 title="Fetch latest data from all backend endpoints"
-                className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all text-xs font-mono flex items-center gap-1.5 font-bold"
+                className="h-8 px-2.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-mono font-medium flex items-center gap-1.5 transition-colors active:scale-95"
               >
                 <ActivityIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Fetch Live</span>
+                <span>Fetch Live</span>
               </button>
 
+              {/* Log Out Button */}
               <button
                 onClick={handleLogout}
-                className="px-3 py-1.5 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-mono text-xs font-bold transition-all"
+                className="h-8 px-2.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-red-600 dark:hover:text-red-400 font-mono text-xs font-medium transition-colors"
               >
                 Log Out
               </button>
             </>
           )}
 
-          {/* Close Button */}
+          {/* Close Dashboard Button */}
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all"
+            className="h-8 w-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white flex items-center justify-center transition-colors shrink-0 active:scale-95"
             aria-label="Close Dashboard"
+            title="Close Dashboard (ESC)"
           >
-            <XIcon className="w-4 h-4" />
+            <XIcon className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -918,280 +924,442 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
         /* ------------------------------------------------------------- */
         /* VIEW 2: AUTHENTICATED OBSERVATORY DASHBOARD CONSOLE           */
         /* ------------------------------------------------------------- */
-        <div className="grid grid-cols-1 md:grid-cols-12 flex-grow overflow-hidden">
+        <div className="flex flex-1 overflow-hidden w-full">
           
-          {/* Left Navigation Suite (3 Cols) */}
-          <div className="md:col-span-3 border-r border-neutral-200 dark:border-neutral-800 p-3 sm:p-4 space-y-1.5 overflow-y-auto bg-neutral-50/60 dark:bg-[#07070B]/70">
-            <div className="text-[10px] font-mono text-neutral-500 font-bold uppercase px-3 py-1">
-              OBSERVABILITY MODULES
+          {/* Left Sleek Compact Sidebar (270px Fixed) */}
+          <aside className="w-64 lg:w-[270px] shrink-0 border-r border-neutral-200 dark:border-neutral-800/80 bg-neutral-50/70 dark:bg-[#07070B] flex flex-col justify-between overflow-y-auto p-3 space-y-4">
+            <div className="space-y-4">
+              
+              {/* Group 1: Navigation & Simulation */}
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-mono font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase px-2 py-1">
+                  NAVIGATION
+                </div>
+                {[
+                  { id: 'overview' as const, label: 'Cockpit Overview', icon: ServerIcon, badge: 'LIVE' },
+                  { id: 'simulation' as const, label: 'Simulation Studio', icon: SparklesIcon, badge: '5 BENCH' },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isSelected = activeTab === tab.id;
+                  const isSimulation = tab.id === 'simulation';
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-mono transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-bold shadow-xs'
+                          : isSimulation
+                          ? 'text-blue-700 dark:text-blue-300 bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/90 dark:border-blue-800/70 font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/40 hover:text-neutral-950 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon className={`w-3.5 h-3.5 shrink-0 stroke-[1.75] ${isSimulation && !isSelected ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                        <span className="truncate">{tab.label}</span>
+                      </div>
+                      {tab.badge && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          isSelected
+                            ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-950'
+                            : isSimulation
+                            ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                            : tab.badge === 'LIVE'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                        }`}>
+                          {tab.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Group 2: Edge Fleet & Telemetry */}
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-mono font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase px-2 py-1">
+                  FLEET & SENSORS
+                </div>
+                {[
+                  { id: 'fleet' as const, label: 'Hardware Fleet', icon: SmartphoneIcon, count: devices.length },
+                  { id: 'telemetry' as const, label: 'Telemetry Stream', icon: ActivityIcon, count: telemetrySessions.length },
+                  { id: 'datasets' as const, label: 'Sensor Datasets', icon: InfoIcon, count: datasets.length },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isSelected = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-mono transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-bold shadow-xs'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/40 hover:text-neutral-950 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
+                        <span className="truncate">{tab.label}</span>
+                      </div>
+                      {tab.count !== undefined && (
+                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          isSelected ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-950' : 'text-neutral-500 dark:text-neutral-400'
+                        }`}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Group 3: Neural & Algorithms */}
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-mono font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase px-2 py-1">
+                  NEURAL & ENGINE
+                </div>
+                {[
+                  { id: 'ml-engine' as const, label: 'ML Models & Weights', icon: CpuIcon, badge: analytics?.active_model_version || 'v2.1' },
+                  { id: 'config' as const, label: 'Kalman & Sync', icon: ShieldCheckIcon, count: configProfiles.length },
+                  { id: 'maps' as const, label: 'Vector Road Maps', icon: DownloadIcon, count: mapsList.length },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isSelected = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-mono transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-bold shadow-xs'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/40 hover:text-neutral-950 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
+                        <span className="truncate">{tab.label}</span>
+                      </div>
+                      {tab.badge && (
+                        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          isSelected ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-950' : 'text-neutral-500 dark:text-neutral-400'
+                        }`}>
+                          {tab.badge}
+                        </span>
+                      )}
+                      {tab.count !== undefined && (
+                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          isSelected ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-950' : 'text-neutral-500 dark:text-neutral-400'
+                        }`}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Group 4: Operations */}
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-mono font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase px-2 py-1">
+                  OPERATIONS
+                </div>
+                {[
+                  { id: 'ota' as const, label: 'OTA Firmware', icon: TerminalIcon },
+                  { id: 'security' as const, label: 'Operator Clearance', icon: ShieldCheckIcon },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isSelected = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-mono transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-bold shadow-xs'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/40 hover:text-neutral-950 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
+                        <span className="truncate">{tab.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
             </div>
 
-            {[
-              { id: 'overview' as const, label: 'Live Cockpit Overview', icon: ServerIcon, badge: 'LIVE' },
-              { id: 'simulation' as const, label: 'IDR Simulation Engine', icon: SparklesIcon, badge: '5 BENCHMARKS' },
-              { id: 'fleet' as const, label: 'Edge Fleet & Units', icon: SmartphoneIcon, count: devices.length },
-              { id: 'telemetry' as const, label: 'Telemetry & Outages', icon: ActivityIcon, count: telemetrySessions.length },
-              { id: 'ml-engine' as const, label: 'ML Models & Weights', icon: CpuIcon, badge: analytics?.active_model_version || 'v2.1.0' },
-              { id: 'maps' as const, label: 'Offline Vector Maps', icon: DownloadIcon, count: mapsList.length },
-              { id: 'config' as const, label: 'Kalman & Sync Config', icon: ShieldCheckIcon, count: configProfiles.length },
-              { id: 'ota' as const, label: 'OTA Firmware Center', icon: TerminalIcon },
-              { id: 'datasets' as const, label: 'Sensor Training Datasets', icon: InfoIcon, count: datasets.length },
-              { id: 'security' as const, label: 'Operator Security & Auth', icon: SparklesIcon },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isSelected = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-mono transition-all flex items-center justify-between ${
-                    isSelected
-                      ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
-                      : 'text-neutral-700 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{tab.label}</span>
-                  </div>
-                  {tab.badge && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                      isSelected ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-black' : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200'
-                    }`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                  {tab.count !== undefined && (
-                    <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full ${
-                      isSelected ? 'bg-neutral-800 text-white dark:bg-neutral-200 dark:text-black' : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200'
-                    }`}>
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-
-            {/* Quick Operator Status Card */}
+            {/* Compact Professional Operator Footer */}
             {currentUser && (
-              <div className="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-800 p-3 rounded-2xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-2">
-                <div className="text-[10px] font-mono text-neutral-500 font-bold uppercase">
-                  Authenticated Operator
+              <div className="pt-2.5 border-t border-neutral-200 dark:border-neutral-800/70 p-2 rounded-lg bg-white dark:bg-[#0B0B0F] border border-neutral-200/70 dark:border-neutral-800/50 shadow-2xs flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-md bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center font-mono font-bold text-[10px] shrink-0">
+                    {currentUser.username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs font-mono text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                      {currentUser.username}
+                    </div>
+                    <div className="text-[10px] font-mono text-neutral-400 truncate leading-none mt-0.5">
+                      {currentUser.role}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="font-bold text-neutral-950 dark:text-white">{currentUser.username}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
-                    {currentUser.role}
-                  </span>
-                </div>
-                <div className="text-[10px] font-mono text-neutral-500 truncate">
-                  {currentUser.email}
-                </div>
+
+                <button
+                  onClick={handleLogout}
+                  title="Log out operator"
+                  className="p-1 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 text-[10px] font-mono"
+                >
+                  Exit
+                </button>
               </div>
             )}
-          </div>
+          </aside>
 
-          {/* Right Main Observatory Canvas (9 Cols) */}
-          <div className="md:col-span-9 p-5 sm:p-7 overflow-y-auto space-y-6">
+          {/* Right Main Observatory Canvas (Fluid Flex-1) */}
+          <main className="flex-1 overflow-y-auto bg-neutral-100/40 dark:bg-[#050508] p-4 sm:p-6 lg:p-7 space-y-5">
             
             {/* 1. OVERVIEW COCKPIT TAB */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 
-                {/* 4 Mission Control KPI Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-5 rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1">
-                    <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">TOTAL ACTIVE FLEET</div>
-                    <div className="text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+                {/* 4 Professional KPI Metric Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                  <div className="p-4 sm:p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase font-medium">
+                      <span>ACTIVE FLEET</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-neutral-950 dark:text-white">
                       {analytics?.online_devices ?? devices.filter((d) => d.status === 'ONLINE').length}{' '}
-                      <span className="text-xs text-neutral-500 font-normal">
-                        / {analytics?.total_devices ?? devices.length} units
+                      <span className="text-xs text-neutral-400 font-normal">
+                        / {analytics?.total_devices ?? devices.length}
                       </span>
                     </div>
-                    <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      ● Live Fleet Ingestion
+                    <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                      ● Live Stream Ingestion
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1">
-                    <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">TELEMETRY INGESTION</div>
-                    <div className="text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+                  <div className="p-4 sm:p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase font-medium">
+                      <span>TELEMETRY INGESTION</span>
+                      <ActivityIcon className="w-3.5 h-3.5 text-neutral-400" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-neutral-950 dark:text-white">
                       {analytics?.total_telemetry_records
                         ? (analytics.total_telemetry_records > 1000 ? (analytics.total_telemetry_records / 1000).toFixed(1) + 'k' : analytics.total_telemetry_records)
                         : telemetrySessions.reduce((acc, s) => acc + s.record_count, 0) || '0'}{' '}
-                      <span className="text-xs text-neutral-500 font-normal">logs</span>
+                      <span className="text-xs text-neutral-400 font-normal">logs</span>
                     </div>
                     <div className="text-[11px] font-mono text-neutral-500">
-                      High-rate 200 Hz IMU buffer
+                      200 Hz IMU buffer
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1">
-                    <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">ACTIVE MODEL ERROR (MAE)</div>
-                    <div className="text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+                  <div className="p-4 sm:p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase font-medium">
+                      <span>ACTIVE MODEL ERROR</span>
+                      <CpuIcon className="w-3.5 h-3.5 text-neutral-400" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-neutral-950 dark:text-white">
                       ±{modelPerf?.mean_absolute_error_m ?? analytics?.avg_position_error_m ?? '0.14'}{' '}
-                      <span className="text-xs text-neutral-500 font-normal">m</span>
+                      <span className="text-xs text-neutral-400 font-normal">m</span>
                     </div>
                     <div className="text-[11px] font-mono text-neutral-500">
-                      RMSE: {modelPerf?.root_mean_squared_error_m ?? '0.18'} m
+                      RMSE {modelPerf?.root_mean_squared_error_m ?? '0.18'} m
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1">
-                    <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">MAX DRIFT RATE</div>
-                    <div className="text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+                  <div className="p-4 sm:p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 uppercase font-medium">
+                      <span>MAX DRIFT RATE</span>
+                      <ShieldCheckIcon className="w-3.5 h-3.5 text-neutral-400" />
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-neutral-950 dark:text-white">
                       {modelPerf?.max_drift_rate_m_per_min ?? '0.045'}{' '}
-                      <span className="text-xs text-neutral-500 font-normal">m/min</span>
+                      <span className="text-xs text-neutral-400 font-normal">m/min</span>
                     </div>
                     <div className="text-[11px] font-mono text-neutral-500">
-                      Evaluated: {modelPerf?.total_evaluation_hours ?? '128.5'} hrs
+                      128.5 hrs logged
                     </div>
                   </div>
                 </div>
 
-                {/* IDR Simulation & Control Plane Launch Card */}
-                <div className="p-5 rounded-3xl bg-gradient-to-r from-blue-500/10 via-neutral-100 to-emerald-500/10 dark:from-blue-950/40 dark:via-[#0D0D12] dark:to-emerald-950/30 border border-blue-500/20 dark:border-blue-800/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
-                      <SparklesIcon className="w-4 h-4" />
-                      <span>IDR SIMULATION ENGINE & REAL-WORLD MAP VISUALIZER</span>
-                    </div>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400 font-mono">
-                      Execute 5 pre-configured SIH-2026 navigation benchmarks or drop custom waypoints on an interactive Leaflet map to evaluate dead-reckoning drift under GNSS outages.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => setActiveTab('simulation')}
-                      className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold text-xs flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-blue-500/20"
-                    >
-                      <ZapIcon className="w-3.5 h-3.5" />
-                      <span>Open Simulation Studio</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Live Action Trigger Strip */}
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-neutral-950 dark:text-white">
-                      <TerminalIcon className="w-4 h-4 text-emerald-500" />
-                      <span>Live Ingestion & Pulse Trigger</span>
-                    </div>
-                    <p className="text-xs text-neutral-500 font-mono">
-                      Simulate continuous high-rate accelerometer/gyro batch telemetry ingestion directly hitting <code className="text-emerald-600 dark:text-emerald-400">/api/v1/telemetry/batch/</code>.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleIngestTelemetry}
-                      className="px-4 py-2.5 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-sm"
-                    >
-                      <ActivityIcon className="w-3.5 h-3.5" />
-                      <span>Transmit Telemetry Packet</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Fleet Quick Status & Outage Integrity Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Simulation Studio Launchpad & Live Pulse Actions (7/5 Split) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   
-                  {/* Active Hardware Edge Units Card */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-bold font-mono text-xs text-neutral-950 dark:text-white">
-                        <SmartphoneIcon className="w-4 h-4" />
-                        <span>EDGE HARDWARE STATUS</span>
+                  {/* Left (7 Cols): Highlighted Simulation Studio Launchpad */}
+                  <div className="lg:col-span-7 p-5 rounded-xl bg-gradient-to-br from-blue-50/90 via-white to-blue-50/40 dark:from-blue-950/40 dark:via-[#0A0A0E] dark:to-blue-950/20 border-2 border-blue-500/40 dark:border-blue-500/50 shadow-sm flex flex-col justify-between space-y-4 relative overflow-hidden">
+                    <div className="space-y-1.5 relative z-10">
+                      <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-blue-700 dark:text-blue-300 uppercase">
+                        <SparklesIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <span>SIMULATION STUDIO & MAP ENGINE • FEATURED</span>
                       </div>
+                      <h3 className="text-sm sm:text-base font-bold font-mono text-neutral-950 dark:text-white">
+                        5 Navigation Outage Benchmarks
+                      </h3>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-300 font-mono leading-relaxed">
+                        Evaluate dead-reckoning accuracy across pre-configured multi-level tunnels, urban canyons, and satellite dropouts in real time.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-blue-200/80 dark:border-blue-900/60 relative z-10">
+                      <span className="text-[11px] font-mono text-blue-800 dark:text-blue-300 font-medium">
+                        Leaflet & Mapbox Tile Engine
+                      </span>
                       <button
-                        onClick={() => setActiveTab('fleet')}
-                        className="text-xs font-mono text-neutral-500 hover:text-black dark:hover:text-white font-bold"
+                        onClick={() => setActiveTab('simulation')}
+                        className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 active:scale-98 transition-all shadow-sm shadow-blue-500/30"
                       >
-                        Manage Fleet ({devices.length}) →
+                        <ZapIcon className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Launch Simulation Studio →</span>
                       </button>
                     </div>
+                  </div>
 
-                    {devices.length === 0 ? (
-                      <div className="p-6 rounded-2xl bg-neutral-50 dark:bg-black/30 border border-dashed border-neutral-300 dark:border-neutral-700 text-center space-y-2">
-                        <p className="text-xs font-mono text-neutral-500">No hardware units registered yet.</p>
+                  {/* Right (5 Cols): Live Ingestion Trigger */}
+                  <div className="lg:col-span-5 p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-neutral-500 dark:text-neutral-400 uppercase">
+                        <TerminalIcon className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>TELEMETRY INGESTION</span>
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold font-mono text-neutral-950 dark:text-white">
+                        Transmit IMU Sample
+                      </h3>
+                      <p className="text-xs text-neutral-500 font-mono leading-relaxed">
+                        Emit synchronized 200 Hz accelerometer/gyro stream to <code className="text-neutral-700 dark:text-neutral-300">/api/v1/telemetry/batch/</code>.
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/60">
+                      <button
+                        onClick={handleIngestTelemetry}
+                        className="w-full py-1.5 px-3.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+                      >
+                        <ActivityIcon className="w-3.5 h-3.5" />
+                        <span>Send Telemetry Pulse</span>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Fleet Status & Active Neural Model Side-by-Side (50/50) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+                  
+                  {/* Hardware Edge Units Card */}
+                  <div className="p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-3.5 flex flex-col justify-between h-full">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800/60">
+                        <div className="flex items-center gap-2 font-mono font-bold text-xs text-neutral-950 dark:text-white">
+                          <SmartphoneIcon className="w-3.5 h-3.5 text-neutral-400" />
+                          <span>EDGE HARDWARE FLEET</span>
+                        </div>
                         <button
                           onClick={() => setActiveTab('fleet')}
-                          className="px-3 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono text-xs font-bold"
+                          className="text-xs font-mono text-neutral-500 hover:text-black dark:hover:text-white font-medium"
                         >
-                          + Provision First Device
+                          Fleet ({devices.length}) →
                         </button>
                       </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {devices.slice(0, 4).map((dev) => (
-                          <div
-                            key={dev.id}
-                            className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono"
+
+                      {devices.length === 0 ? (
+                        <div className="p-5 rounded-lg bg-neutral-50 dark:bg-black/20 border border-dashed border-neutral-200 dark:border-neutral-800 text-center space-y-2">
+                          <p className="text-xs font-mono text-neutral-400">No active hardware edge units registered.</p>
+                          <button
+                            onClick={() => setActiveTab('fleet')}
+                            className="px-3 py-1 rounded-md bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-mono text-xs font-semibold"
                           >
-                            <div>
-                              <div className="font-bold text-neutral-950 dark:text-white">{dev.name}</div>
-                              <div className="text-[10px] text-neutral-500 mt-0.5">
-                                {dev.hardware_id} • FW {dev.firmware_version}
+                            + Provision Device
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {devices.slice(0, 3).map((dev) => (
+                            <div
+                              key={dev.id}
+                              className="p-2.5 rounded-lg bg-neutral-50/60 dark:bg-black/30 border border-neutral-200/60 dark:border-neutral-800/50 flex items-center justify-between text-xs font-mono"
+                            >
+                              <div>
+                                <div className="font-semibold text-neutral-950 dark:text-white">{dev.name}</div>
+                                <div className="text-[10px] text-neutral-400">
+                                  {dev.hardware_id} • FW {dev.firmware_version}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                  dev.status === 'ONLINE'
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                    : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-500'
+                                }`}>
+                                  {dev.status}
+                                </span>
+                                <button
+                                  onClick={() => handleSendHeartbeat(dev.id)}
+                                  className="px-2 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10px]"
+                                >
+                                  Ping
+                                </button>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                dev.status === 'ONLINE'
-                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                  : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400'
-                              }`}>
-                                {dev.status}
-                              </span>
-                              <button
-                                onClick={() => handleSendHeartbeat(dev.id)}
-                                className="px-2 py-1 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all text-[10px]"
-                              >
-                                Heartbeat
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2.5 border-t border-neutral-100 dark:border-neutral-800/60 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                      <span>Gateway Polling</span>
+                      <span className="font-semibold text-neutral-700 dark:text-neutral-300">200 Hz WebSocket</span>
+                    </div>
                   </div>
 
                   {/* Active Neural Model Card */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-bold font-mono text-xs text-neutral-950 dark:text-white">
-                        <CpuIcon className="w-4 h-4" />
-                        <span>ACTIVE EDGE NEURAL MODEL</span>
+                  <div className="p-5 rounded-xl bg-white dark:bg-[#0A0A0E] border border-neutral-200/80 dark:border-neutral-800/80 shadow-2xs space-y-3.5 flex flex-col justify-between h-full">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800/60">
+                        <div className="flex items-center gap-2 font-mono font-bold text-xs text-neutral-950 dark:text-white">
+                          <CpuIcon className="w-3.5 h-3.5 text-neutral-400" />
+                          <span>EDGE NEURAL MODEL</span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                          {latestModel?.version || analytics?.active_model_version || 'v2.1.0'}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-black text-white dark:bg-white dark:text-black">
-                        {latestModel?.version || analytics?.active_model_version || 'v2.1.0'}
-                      </span>
+
+                      <div className="p-3.5 rounded-lg bg-neutral-50/60 dark:bg-black/30 border border-neutral-200/60 dark:border-neutral-800/50 space-y-2 text-xs font-mono">
+                        <div className="flex items-center justify-between">
+                          <span className="text-neutral-400">Model Name:</span>
+                          <span className="font-semibold text-neutral-950 dark:text-white">
+                            {latestModel?.name || models[0]?.name || 'idr_dead_reckoning_lstm'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-neutral-400">Architecture:</span>
+                          <span className="font-semibold text-neutral-950 dark:text-white">
+                            {latestModel?.architecture || models[0]?.architecture || 'LSTM-ResNet Hybrid'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-neutral-400">Inference Latency:</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">3.8 ms (ONNX INT8)</span>
+                        </div>
+                        <div className="pt-2 border-t border-neutral-200/60 dark:border-neutral-800/40 flex justify-between items-center text-[10px]">
+                          <span className="text-neutral-400">SHA-256:</span>
+                          <code className="text-neutral-600 dark:text-neutral-300 truncate max-w-[160px]">
+                            {latestModel?.checksum_sha256 || models[0]?.checksum_sha256 || '8f434346648f...'}
+                          </code>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 space-y-2.5 text-xs font-mono">
-                      <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Model Name:</span>
-                        <span className="font-bold text-neutral-950 dark:text-white">
-                          {latestModel?.name || models[0]?.name || 'idr_dead_reckoning_lstm'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Architecture:</span>
-                        <span className="font-bold text-neutral-950 dark:text-white">
-                          {latestModel?.architecture || models[0]?.architecture || 'LSTM-ResNet Hybrid'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Inference Latency:</span>
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400">3.8 ms (ONNX INT8)</span>
-                      </div>
-                      <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center text-[11px]">
-                        <span className="text-neutral-500">SHA-256 Checksum:</span>
-                        <code className="text-[10px] text-neutral-700 dark:text-neutral-300 truncate max-w-[180px]">
-                          {latestModel?.checksum_sha256 || models[0]?.checksum_sha256 || '8f434346648f...'}
-                        </code>
-                      </div>
+                    <div className="pt-2.5 border-t border-neutral-100 dark:border-neutral-800/60 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                      <span>Quantization: INT8 TensorRT</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">● Edge Deployed</span>
                     </div>
                   </div>
 
@@ -1671,7 +1839,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
               </div>
             )}
 
-          </div>
+          </main>
         </div>
       )}
 
