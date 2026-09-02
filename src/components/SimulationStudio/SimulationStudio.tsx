@@ -102,6 +102,30 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
     };
   }, []);
 
+  // Helper to obtain tile layer URL using VITE_MAPBOX_TOKEN or fallback to OSM
+  const getTileConfig = useCallback((isDark: boolean): { url: string; options: L.TileLayerOptions } => {
+    const mapboxToken = (import.meta as any).env?.VITE_MAPBOX_TOKEN;
+    if (mapboxToken && typeof mapboxToken === 'string' && mapboxToken.startsWith('pk.')) {
+      const styleId = isDark ? 'dark-v11' : 'streets-v12';
+      return {
+        url: `https://api.mapbox.com/styles/v1/mapbox/${styleId}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`,
+        options: {
+          maxZoom: 19,
+          attribution: '© Mapbox © OpenStreetMap',
+          tileSize: 256,
+        },
+      };
+    }
+
+    return {
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors',
+      },
+    };
+  }, []);
+
   // 2. Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || leafletMapRef.current) return;
@@ -115,18 +139,21 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const tileUrl =
-      theme === 'dark'
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-
-    const tileLayer = L.tileLayer(tileUrl, {
-      maxZoom: 19,
-      subdomains: 'abcd',
-    }).addTo(map);
+    const { url, options } = getTileConfig(theme === 'dark');
+    const tileLayer = L.tileLayer(url, options).addTo(map);
 
     tileLayerRef.current = tileLayer;
     leafletMapRef.current = map;
+
+    // Invalidate size once DOM renders
+    const resizeTimer = setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+
+    const handleResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener('resize', handleResize);
 
     // Map Click handler for Custom Waypoints
     map.on('click', (e: L.LeafletMouseEvent) => {
@@ -137,6 +164,8 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
     executeInitialSimulation('urban_tunnel_outage');
 
     return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleResize);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       map.remove();
       leafletMapRef.current = null;
@@ -145,14 +174,17 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
 
   // 3. Update Tiles on Theme Change
   useEffect(() => {
-    if (!leafletMapRef.current || !tileLayerRef.current) return;
-    const tileUrl =
-      theme === 'dark'
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    if (!leafletMapRef.current) return;
+    const { url, options } = getTileConfig(theme === 'dark');
 
-    tileLayerRef.current.setUrl(tileUrl);
-  }, [theme]);
+    if (tileLayerRef.current) {
+      tileLayerRef.current.remove();
+    }
+
+    const newTileLayer = L.tileLayer(url, options).addTo(leafletMapRef.current);
+    tileLayerRef.current = newTileLayer;
+    leafletMapRef.current.invalidateSize();
+  }, [theme, getTileConfig]);
 
   // Handle map click when in Custom Control Plane Mode
   const handleMapClick = (lat: number, lng: number) => {
@@ -268,7 +300,92 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
 
       waypointMarkersRef.current.push(startMarker, endMarker);
 
-      // 5. Vehicle Live Marker
+      // 5. GPS Disconnection Spot & GPS Restored Spot Pinpoints
+      const outagePointsList = traj.filter((p) => p.is_gnss_outage);
+      if (outagePointsList.length > 0) {
+        const outageStartPt = outagePointsList[0];
+        const outageEndPt = outagePointsList[outagePointsList.length - 1];
+
+        // GPS Disconnected / Blackout Entry Spot Marker (Pinned exactly on path)
+        const gpsOutageStartIcon = L.divIcon({
+          className: 'gps-outage-start-marker',
+          html: `
+            <div style="width: 220px; display: flex; flex-direction: column; align-items: center; pointer-events: auto; cursor: pointer;">
+              <div style="background: #ef4444; color: #ffffff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 4px; border: 1.5px solid #ffffff; line-height: 1.2;">
+                <span style="font-size: 11px;">⚠️</span>
+                <span>Internet & GPS Lost (${outageStartPt.time_sec.toFixed(0)}s)</span>
+              </div>
+              <div style="width: 2px; height: 10px; background: #ef4444;"></div>
+              <div style="position: relative; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 14px; height: 14px; background: #ef4444; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 12px #ef4444;"></div>
+                <span style="position: absolute; width: 22px; height: 22px; border-radius: 50%; background: rgba(239,68,68,0.5); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+              </div>
+            </div>
+          `,
+          iconSize: [220, 46],
+          iconAnchor: [110, 38],
+        });
+
+        const gpsOutageStartMarker = L.marker([outageStartPt.latitude, outageStartPt.longitude], {
+          icon: gpsOutageStartIcon,
+          zIndexOffset: 500,
+        })
+          .bindPopup(`
+            <div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #111827; padding: 4px;">
+              <div style="font-weight: bold; color: #dc2626; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                <span>⚠️ Internet & GPS Lost Spot</span>
+              </div>
+              <div>Timestamp: <b>${outageStartPt.time_sec.toFixed(1)}s</b></div>
+              <div>Coordinates: <b>${outageStartPt.latitude.toFixed(5)}, ${outageStartPt.longitude.toFixed(5)}</b></div>
+              <div style="margin-top: 6px; padding: 2px 6px; background: #fee2e2; color: #991b1b; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                Dead Reckoning Active (INS Only)
+              </div>
+            </div>
+          `)
+          .addTo(map);
+
+        // GPS Reconnection / Signal Restored Spot Marker (Pinned exactly on path)
+        const gpsOutageEndIcon = L.divIcon({
+          className: 'gps-outage-end-marker',
+          html: `
+            <div style="width: 220px; display: flex; flex-direction: column; align-items: center; pointer-events: auto; cursor: pointer;">
+              <div style="background: #10b981; color: #ffffff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 4px; border: 1.5px solid #ffffff; line-height: 1.2;">
+                <span style="font-size: 11px;">📡</span>
+                <span>GPS & Link Restored (${outageEndPt.time_sec.toFixed(0)}s)</span>
+              </div>
+              <div style="width: 2px; height: 10px; background: #10b981;"></div>
+              <div style="position: relative; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 14px; height: 14px; background: #10b981; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 12px #10b981;"></div>
+                <span style="position: absolute; width: 22px; height: 22px; border-radius: 50%; background: rgba(16,185,129,0.5); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+              </div>
+            </div>
+          `,
+          iconSize: [220, 46],
+          iconAnchor: [110, 38],
+        });
+
+        const gpsOutageEndMarker = L.marker([outageEndPt.latitude, outageEndPt.longitude], {
+          icon: gpsOutageEndIcon,
+          zIndexOffset: 500,
+        })
+          .bindPopup(`
+            <div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #111827; padding: 4px;">
+              <div style="font-weight: bold; color: #059669; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                <span>📡 GPS & Link Restored Spot</span>
+              </div>
+              <div>Timestamp: <b>${outageEndPt.time_sec.toFixed(1)}s</b></div>
+              <div>Coordinates: <b>${outageEndPt.latitude.toFixed(5)}, ${outageEndPt.longitude.toFixed(5)}</b></div>
+              <div style="margin-top: 6px; padding: 2px 6px; background: #d1fae5; color: #065f46; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                EKF Re-convergence Active
+              </div>
+            </div>
+          `)
+          .addTo(map);
+
+        waypointMarkersRef.current.push(gpsOutageStartMarker, gpsOutageEndMarker);
+      }
+
+      // 6. Vehicle Live Marker
       const vehicleIcon = L.divIcon({
         className: 'vehicle-nav-marker',
         html: `
@@ -714,7 +831,7 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
           </div>
 
           {/* Map Legend */}
-          <div className="flex items-center gap-3 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-1 bg-cyan-400 rounded-full"></span>
               <span className="text-neutral-600 dark:text-neutral-300">Ground Truth</span>
@@ -725,7 +842,15 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-1 bg-amber-400 rounded-full"></span>
-              <span className="text-neutral-600 dark:text-neutral-300">GNSS Outage Zone</span>
+              <span className="text-neutral-600 dark:text-neutral-300">Outage Track</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 border border-white"></span>
+              <span className="text-neutral-600 dark:text-neutral-300">Internet & GPS Lost</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white"></span>
+              <span className="text-neutral-600 dark:text-neutral-300">GPS & Link Restored</span>
             </div>
           </div>
         </div>
