@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -161,7 +161,7 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
     });
 
     // Run initial demo synthesis
-    executeInitialSimulation('urban_tunnel_outage');
+    executeInitialSimulation(selectedPresetId);
 
     return () => {
       clearTimeout(resizeTimer);
@@ -171,6 +171,13 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
       leafletMapRef.current = null;
     };
   }, []);
+
+    // 2.5 Update Map & Trajectory when Selected Preset Changes
+  useEffect(() => {
+    if (activeMode === 'presets' && leafletMapRef.current) {
+      executeInitialSimulation(selectedPresetId);
+    }
+  }, [selectedPresetId, activeMode]);
 
   // 3. Update Tiles on Theme Change
   useEffect(() => {
@@ -767,7 +774,7 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
 
               <div>
                 <label className="text-neutral-500 dark:text-neutral-400 block mb-1">
-                  IMU Noise σ ({customAccelNoise})
+                  IMU Noise Ïƒ ({customAccelNoise})
                 </label>
                 <input
                   type="range"
@@ -896,7 +903,7 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
                   <div>
                     <span className="text-neutral-400 block text-[9px]">HEADING</span>
                     <span className="font-bold text-neutral-100">
-                      {currentTelemetry.heading_deg}°
+                      {currentTelemetry.heading_deg}Â°
                     </span>
                   </div>
                   <div>
@@ -1085,13 +1092,13 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
                   <div className="flex justify-between items-center text-amber-600 dark:text-amber-400 font-bold">
                     <span>Window #{idx + 1}</span>
                     <span>
-                      t = {ev.start_seconds}s → {ev.end_seconds}s ({ev.duration_seconds}s)
+                      t = {ev.start_seconds}s â†’ {ev.end_seconds}s ({ev.duration_seconds}s)
                     </span>
                   </div>
                   <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-[11px]">
-                    <span>Initial → Max Error:</span>
+                    <span>Initial â†’ Max Error:</span>
                     <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                      {ev.initial_error_m}m → {ev.max_error_m}m
+                      {ev.initial_error_m}m â†’ {ev.max_error_m}m
                     </span>
                   </div>
                   <div className="flex justify-between text-neutral-600 dark:text-neutral-400 text-[11px]">
@@ -1188,4 +1195,5 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
     </section>
   );
 };
+
 
