@@ -509,13 +509,13 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
   return (
     <div className="fixed inset-0 z-[100] w-full h-full min-h-screen bg-white dark:bg-[#06060A] flex flex-col overflow-hidden text-neutral-900 dark:text-neutral-100 animate-in fade-in duration-200">
       
-      {/* Cockpit Top Command Bar */}
-      <div className="flex items-center justify-between px-4 sm:px-8 py-3.5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0C0C12] shrink-0">
-        <div className="flex items-center gap-3.5">
+      {/* Dynamic Top Control Header */}
+      <div className="p-4 sm:px-6 bg-white dark:bg-[#0D0D12] border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between gap-4 relative z-30 shrink-0">
+        <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-neutral-800 dark:text-neutral-200 transition-all font-mono text-xs font-bold flex items-center gap-1.5"
-            title="Return to Landing Page (ESC)"
+            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-mono text-xs font-semibold flex items-center gap-1.5 border border-neutral-300 dark:border-neutral-700 transition-all active:scale-95"
+            title="Return to Landing Page"
           >
             <span>←</span>
             <span className="hidden sm:inline">Landing Page</span>
@@ -529,7 +529,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm sm:text-base font-extrabold font-mono tracking-tight text-neutral-950 dark:text-white">
-                IDR OBSERVATORY & FLEET MISSION CONTROL
+                IDR MISSION CONTROL & LIVE DASHBOARD
               </h2>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700">
                 {isAuthenticated ? 'AUTHENTICATED' : 'AUTH GATEWAY'}
@@ -542,56 +542,58 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live Backend /health/live Connection Probe Button */}
-          <button
-            onClick={handleVerifyHealth}
-            disabled={checkingHealth}
-            title="Probe backend /health/live endpoint status and latency"
-            className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold hover:border-black dark:hover:border-white transition-all flex items-center gap-2 shadow-sm active:scale-95"
-          >
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                checkingHealth
-                  ? 'bg-blue-500 animate-spin'
-                  : backendOnline
-                  ? 'bg-emerald-500 animate-ping'
-                  : 'bg-amber-500'
-              }`}
-            ></span>
-            <span className="text-neutral-800 dark:text-neutral-200">
-              {checkingHealth
-                ? 'Testing /health/live...'
-                : backendOnline
-                ? `LIVE /health/live ${healthStatus?.latency_ms ? `(${healthStatus.latency_ms}ms)` : ''}`
-                : 'Probe /health/live'}
-            </span>
-          </button>
-
-          {/* Sync Trigger */}
-          <button
-            onClick={fetchBackendData}
-            disabled={loading}
-            title="Fetch latest data from all backend endpoints"
-            className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all text-xs font-mono flex items-center gap-1.5 font-bold"
-          >
-            <ActivityIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Fetch Live</span>
-          </button>
-
           {isAuthenticated && (
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-mono text-xs font-bold transition-all"
-            >
-              Log Out
-            </button>
+            <>
+              {/* Live Backend /health/live Connection Probe Button */}
+              <button
+                onClick={handleVerifyHealth}
+                disabled={checkingHealth}
+                title="Probe backend /health/live endpoint status and latency"
+                className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold hover:border-black dark:hover:border-white transition-all flex items-center gap-2 shadow-sm active:scale-95"
+              >
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    checkingHealth
+                      ? 'bg-blue-500 animate-spin'
+                      : backendOnline
+                      ? 'bg-emerald-500 animate-ping'
+                      : 'bg-amber-500'
+                  }`}
+                ></span>
+                <span className="text-neutral-800 dark:text-neutral-200">
+                  {checkingHealth
+                    ? 'Testing...'
+                    : backendOnline
+                    ? `LIVE ${healthStatus?.latency_ms ? `(${healthStatus.latency_ms}ms)` : ''}`
+                    : 'Probe Health'}
+                </span>
+              </button>
+
+              {/* Sync Trigger */}
+              <button
+                onClick={fetchBackendData}
+                disabled={loading}
+                title="Fetch latest data from all backend endpoints"
+                className="p-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all text-xs font-mono flex items-center gap-1.5 font-bold"
+              >
+                <ActivityIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Fetch Live</span>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-mono text-xs font-bold transition-all"
+              >
+                Log Out
+              </button>
+            </>
           )}
 
           {/* Close Button */}
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all"
-            aria-label="Close Observatory"
+            aria-label="Close Dashboard"
           >
             <XIcon className="w-4 h-4" />
           </button>
@@ -631,101 +633,91 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
       {/* VIEW 1: AUTHENTICATION / LOGIN GATEWAY (If not authenticated) */}
       {/* ------------------------------------------------------------- */}
       {!isAuthenticated ? (
-        <div className="flex-grow flex items-center justify-center p-4 sm:p-8 md:p-12 overflow-y-auto bg-neutral-100/70 dark:bg-[#040407]">
-          <div className="w-full max-w-4xl rounded-3xl bg-white dark:bg-[#0B0B10] border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[520px]">
+        <div className="flex-grow flex items-center justify-center p-4 sm:p-8 md:p-12 overflow-y-auto bg-neutral-100/80 dark:bg-[#06060A]">
+          <div className="w-full max-w-4xl rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
             
-            {/* Left Column: Mission Control Telemetry Security Brief (5 Cols) */}
-            <div className="lg:col-span-5 bg-neutral-950 text-white p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-neutral-800 relative overflow-hidden">
+            {/* Left Column: Mission Control Identity Brief (5 Cols) */}
+            <div className="lg:col-span-5 bg-gradient-to-b from-[#08080C] to-[#0D0E17] text-white p-7 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-neutral-800 relative overflow-hidden">
               <div className="space-y-6 relative z-10">
-                {/* Emblem & Title */}
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-2xl bg-white text-black shadow-lg">
-                    <ShieldCheckIcon className="w-6 h-6" />
+                
+                {/* Status Pill & Header */}
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>EDGE TELEMETRY GATEWAY</span>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase">
-                      SECURITY STRATUM 1
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="p-2.5 rounded-2xl bg-white text-black shadow-lg shrink-0">
+                      <ShieldCheckIcon className="w-5 h-5" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-extrabold font-mono tracking-tight text-white">
-                      IDR MISSION CONTROL
-                    </h3>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-extrabold font-mono tracking-tight text-white">
+                        IDR MISSION CONTROL
+                      </h3>
+                      <p className="text-[11px] text-neutral-400 font-mono">
+                        Hardware & Neural Fusion Console
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 <p className="text-xs text-neutral-400 leading-relaxed font-mono">
-                  Authorized operator gateway to live inertial dead-reckoning telemetry, active neural weight deployment, and fleet sync.
+                  Authorized operator gateway to live inertial dead-reckoning telemetry, 200 Hz sensor fusion, and active ONNX edge model weights.
                 </p>
 
-                {/* Security Highlights */}
-                <div className="space-y-3 pt-2">
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
-                      <TerminalIcon className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>JWT Bearer Service</span>
-                    </div>
-                    <div className="text-[11px] font-mono text-neutral-400">
-                      Encrypted endpoint at <code className="text-emerald-300">/api/v1/auth/token/</code>
+                {/* Streamlined Capability Badges */}
+                <div className="space-y-2.5 pt-1">
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                    <ActivityIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="text-xs font-mono">
+                      <span className="font-bold text-white block">200 Hz Strapdown IMU Fusion</span>
+                      <span className="text-[11px] text-neutral-400">Micro-vibration & kinematic speed regression</span>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
-                      <ActivityIcon className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Realtime Telemetry Stream</span>
-                    </div>
-                    <div className="text-[11px] font-mono text-neutral-400">
-                      Synchronized high-frequency 200 Hz IMU packet logs
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                    <CpuIcon className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <div className="text-xs font-mono">
+                      <span className="font-bold text-white block">Active Neural Engine ({analytics?.active_model_version || 'v2.1.0'})</span>
+                      <span className="text-[11px] text-neutral-400">MAE ±{modelPerf?.mean_absolute_error_m || '0.14'}m on-device inference</span>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
-                      <CpuIcon className="w-3.5 h-3.5 text-purple-400" />
-                      <span>Active Neural Engine</span>
-                    </div>
-                    <div className="text-[11px] font-mono text-neutral-400">
-                      Model {analytics?.active_model_version || 'v2.1.0'} • MAE ±{modelPerf?.mean_absolute_error_m || '0.14'}m
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                    <TerminalIcon className="w-4 h-4 text-purple-400 shrink-0" />
+                    <div className="text-xs font-mono">
+                      <span className="font-bold text-white block">Zero-Trust Operator Clearance</span>
+                      <span className="text-[11px] text-neutral-400">Encrypted JWT tokens & fleet access control</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Node status & Health Probe */}
-              <div className="pt-6 mt-6 border-t border-white/10 space-y-2 text-[11px] font-mono text-neutral-400 relative z-10">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                    <span>Node: {API_BASE_URL}</span>
-                  </span>
-                  <span className="text-neutral-500 font-bold">TLS 1.3 / JWT</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleVerifyHealth}
-                  disabled={checkingHealth}
-                  className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-mono text-xs font-bold transition-all flex items-center justify-center gap-2"
-                >
-                  <ActivityIcon className={`w-3.5 h-3.5 ${checkingHealth ? 'animate-spin' : ''}`} />
-                  <span>
-                    {checkingHealth ? 'Probing /health/live...' : 'Test Backend Connection (/health/live)'}
-                  </span>
-                </button>
+              {/* Bottom Connection Status Strip */}
+              <div className="pt-4 mt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-neutral-400 relative z-10">
+                <span className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                  <span className="truncate max-w-[180px]">{API_BASE_URL}</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white/10 text-neutral-300 font-bold text-[10px]">
+                  TLS 1.3
+                </span>
               </div>
             </div>
 
             {/* Right Column: Interactive Login / Register Form (7 Cols) */}
-            <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-white dark:bg-[#0B0B10]">
+            <div className="lg:col-span-7 p-7 sm:p-9 flex flex-col justify-between space-y-6 bg-white dark:bg-[#0D0D12]">
               
               <div className="space-y-6">
-                {/* Top Switcher Tabs */}
-                <div className="flex items-center justify-between gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                {/* Top Mode Switcher Header */}
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-800">
                   <div>
                     <div className="text-[10px] font-mono font-bold text-neutral-500 uppercase">
-                      OPERATOR GATEWAY
+                      OPERATOR CLEARANCE
                     </div>
-                    <h4 className="text-base sm:text-lg font-bold font-mono text-neutral-950 dark:text-white">
-                      {authMode === 'login' ? 'Authenticate Operator' : 'Register New Clearance'}
+                    <h4 className="text-base sm:text-lg font-bold font-mono text-neutral-950 dark:text-white mt-0.5">
+                      {authMode === 'login' ? 'Operator Sign In' : 'Register Operator Clearance'}
                     </h4>
                   </div>
 
@@ -765,7 +757,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                 {/* Error Notification Banner */}
                 {authError && (
                   <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-mono flex items-center gap-2">
-                    <span className="font-bold">⚠</span>
+                    <span className="font-bold text-red-500">⚠</span>
                     <span>{authError}</span>
                   </div>
                 )}
@@ -774,36 +766,33 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                 {authMode === 'login' && (
                   <form onSubmit={handleLoginSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
-                          OPERATOR USERNAME:
-                        </label>
-                        <span className="text-[10px] font-mono text-neutral-500">Default: engineer_alex</span>
-                      </div>
+                      <label className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 block">
+                        OPERATOR USERNAME:
+                      </label>
                       <input
                         type="text"
                         value={loginUsername}
                         onChange={(e) => setLoginUsername(e.target.value)}
                         required
                         placeholder="engineer_alex"
-                        className="w-full px-4 py-3 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all"
+                        className="w-full px-4 py-3 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all shadow-inner"
                       />
+                      <div className="text-[10px] font-mono text-neutral-500 pt-0.5">
+                        Default dev credentials: <span className="text-neutral-900 dark:text-neutral-300 font-bold">engineer_alex / alexpass123</span>
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
-                          PASSWORD:
-                        </label>
-                        <span className="text-[10px] font-mono text-neutral-500">JWT Credentials</span>
-                      </div>
+                      <label className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 block">
+                        PASSWORD:
+                      </label>
                       <input
                         type="password"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
                         placeholder="••••••••••••"
-                        className="w-full px-4 py-3 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all"
+                        className="w-full px-4 py-3 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all shadow-inner"
                       />
                     </div>
 
@@ -815,12 +804,12 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                       >
                         {authLoading ? (
                           <>
-                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             <span>Authenticating with Backend...</span>
                           </>
                         ) : (
                           <>
-                            <span>Authenticate & Enter Observatory</span>
+                            <span>Authenticate & Enter Live Dashboard</span>
                             <ArrowUpRightIcon className="w-4 h-4" />
                           </>
                         )}
@@ -829,10 +818,10 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                       <button
                         type="button"
                         onClick={() => handleLoginSubmit()}
-                        className="w-full py-3 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-xs font-bold hover:border-black dark:hover:border-white transition-all flex items-center justify-center gap-2 shadow-sm"
+                        className="w-full py-2.5 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-xs font-bold hover:border-black dark:hover:border-white transition-all flex items-center justify-center gap-2 shadow-sm"
                       >
                         <SparklesIcon className="w-4 h-4 text-emerald-500" />
-                        <span>One-Click Dev Login (engineer_alex)</span>
+                        <span>One-Click Dev Access (engineer_alex)</span>
                       </button>
                     </div>
                   </form>
@@ -852,7 +841,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                           onChange={(e) => setRegUsername(e.target.value)}
                           required
                           placeholder="engineer_sarah"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white text-neutral-900 dark:text-white"
                         />
                       </div>
 
@@ -866,7 +855,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                           onChange={(e) => setRegEmail(e.target.value)}
                           required
                           placeholder="sarah@idr.io"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white text-neutral-900 dark:text-white"
                         />
                       </div>
                     </div>
@@ -882,7 +871,7 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                           onChange={(e) => setRegPassword(e.target.value)}
                           required
                           placeholder="StrongPassword123!"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono focus:outline-none focus:border-black dark:focus:border-white text-neutral-900 dark:text-white"
                         />
                       </div>
 
@@ -908,17 +897,17 @@ export const DevConsole: React.FC<ObservatoryPlatformProps> = ({ isOpen, onClose
                         disabled={authLoading}
                         className="w-full py-3.5 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-50"
                       >
-                        {authLoading ? 'Provisioning Operator...' : 'Register Clearance & Enter Dashboard'}
+                        {authLoading ? 'Provisioning Operator...' : 'Register Clearance & Enter Live Dashboard'}
                       </button>
                     </div>
                   </form>
                 )}
               </div>
 
-              {/* Footer Note */}
+              {/* Clean Footer Note */}
               <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-500">
-                <span>SIH-2026 Dead Reckoning Core</span>
-                <span className="font-bold text-neutral-700 dark:text-neutral-300">Bearer Token Enabled</span>
+                <span>IDR Dead Reckoning Core v1.4.2</span>
+                <span className="font-bold text-neutral-700 dark:text-neutral-300">Secure Bearer Session</span>
               </div>
 
             </div>
