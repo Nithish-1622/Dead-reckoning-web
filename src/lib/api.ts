@@ -1,5 +1,5 @@
 /**
- * SIH-2026 IDR Main Backend: Frontend Integration & API Client
+ *IDR Main Backend: Frontend Integration & API Client
  * Follows frontend_implementation_guide.md specifications
  */
 

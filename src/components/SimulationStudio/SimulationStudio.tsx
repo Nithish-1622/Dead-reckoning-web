@@ -601,7 +601,7 @@ export const SimulationStudio: React.FC<SimulationStudioProps> = ({ isEmbedded =
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-mono font-medium mb-3">
             <SparklesIcon className="w-3.5 h-3.5" />
-            <span>SIH-2026 IDR SIMULATION & CONTROL PLANE</span>
+            <span>IDR SIMULATION & CONTROL PLANE</span>
           </div>
           <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-sans">
             Real-World Map Visualizer & Kinematic Drift Engine
