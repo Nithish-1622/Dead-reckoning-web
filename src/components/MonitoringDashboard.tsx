@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { MOCK_NAVIGATION_SESSIONS } from '../lib/telemetrySimulation';
 import { NavigationSession } from './NavigationSession';
 import { ServerIcon } from './Icons';
+import { useAnalyticsSummary, useFleetSessions } from '../lib/useApi';
 
 export const MonitoringDashboard: React.FC = () => {
-  const [selectedSessionId, setSelectedSessionId] = useState(MOCK_NAVIGATION_SESSIONS[0].id);
-  const selectedSession = MOCK_NAVIGATION_SESSIONS.find((s) => s.id === selectedSessionId) || MOCK_NAVIGATION_SESSIONS[0];
+  const { data: analytics } = useAnalyticsSummary();
+  const { sessions } = useFleetSessions();
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+
+  const currentSessionId = selectedSessionId || (sessions[0]?.id ?? '');
+  const selectedSession = sessions.find((s) => s.id === currentSessionId) || sessions[0];
 
   return (
     <section id="monitoring" className="py-20 sm:py-28 bg-white dark:bg-black border-t border-neutral-200 dark:border-neutral-800 transition-colors relative">
@@ -29,12 +33,16 @@ export const MonitoringDashboard: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <div className="text-[9px] sm:text-[10px] font-mono text-neutral-500 uppercase font-semibold">ACTIVE SESSIONS</div>
-            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">4</div>
+            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+              {analytics?.online_devices ?? sessions.length}
+            </div>
           </div>
 
           <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <div className="text-[9px] sm:text-[10px] font-mono text-neutral-500 uppercase font-semibold">TELEMETRY STREAM</div>
-            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">200 Hz</div>
+            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+              {analytics?.total_telemetry_records ? `${(analytics.total_telemetry_records > 1000 ? (analytics.total_telemetry_records / 1000).toFixed(1) + 'k' : analytics.total_telemetry_records)} rec` : '200 Hz'}
+            </div>
           </div>
 
           <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm">
@@ -44,7 +52,9 @@ export const MonitoringDashboard: React.FC = () => {
 
           <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-neutral-50 dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <div className="text-[9px] sm:text-[10px] font-mono text-neutral-500 uppercase font-semibold">MEAN OUTAGE DRIFT</div>
-            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">0.82%</div>
+            <div className="text-xl sm:text-3xl font-extrabold font-mono text-neutral-950 dark:text-white mt-1">
+              {analytics?.avg_position_error_m !== undefined ? `±${analytics.avg_position_error_m}m` : '0.82%'}
+            </div>
           </div>
         </div>
 
@@ -58,8 +68,8 @@ export const MonitoringDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
-              {MOCK_NAVIGATION_SESSIONS.map((session) => {
-                const isSelected = session.id === selectedSessionId;
+              {sessions.map((session) => {
+                const isSelected = session.id === currentSessionId;
                 return (
                   <button
                     key={session.id}
@@ -97,7 +107,7 @@ export const MonitoringDashboard: React.FC = () => {
 
           {/* Detailed Inspector View (Right 8 cols) */}
           <div className="lg:col-span-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-xl">
-            <NavigationSession session={selectedSession} />
+            {selectedSession && <NavigationSession session={selectedSession} />}
           </div>
 
         </div>
@@ -106,3 +116,4 @@ export const MonitoringDashboard: React.FC = () => {
     </section>
   );
 };
+

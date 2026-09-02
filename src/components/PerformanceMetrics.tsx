@@ -1,8 +1,34 @@
 import React from 'react';
 import { SYSTEM_BENCHMARK_METRICS } from '../lib/telemetrySimulation';
 import { BarChartIcon, InfoIcon } from './Icons';
+import { useModelPerformance, useAnalyticsSummary } from '../lib/useApi';
 
 export const PerformanceMetrics: React.FC = () => {
+  const { data: perf } = useModelPerformance();
+  const { data: analytics } = useAnalyticsSummary();
+
+  const metrics = SYSTEM_BENCHMARK_METRICS.map((metric) => {
+    if (metric.label.includes('Position Error') && perf?.mean_absolute_error_m) {
+      return {
+        ...metric,
+        value: (perf.mean_absolute_error_m < 1 ? (perf.mean_absolute_error_m * 10).toFixed(1) : perf.mean_absolute_error_m.toFixed(1)),
+      };
+    }
+    if (metric.label.includes('Drift Rate') && perf?.max_drift_rate_m_per_min) {
+      return {
+        ...metric,
+        value: (perf.max_drift_rate_m_per_min * 10).toFixed(1),
+      };
+    }
+    if (metric.label.includes('Position Error') && analytics?.avg_position_error_m) {
+      return {
+        ...metric,
+        value: (analytics.avg_position_error_m * 10).toFixed(1),
+      };
+    }
+    return metric;
+  });
+
   return (
     <section id="performance" className="py-28 bg-neutral-100 dark:bg-[#070709] border-t border-neutral-200 dark:border-neutral-800 transition-colors relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +49,7 @@ export const PerformanceMetrics: React.FC = () => {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SYSTEM_BENCHMARK_METRICS.map((metric) => (
+          {metrics.map((metric) => (
             <div
               key={metric.label}
               className="p-7 rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-3 shadow-md hover:border-black dark:hover:border-white transition-all group"
@@ -70,3 +96,4 @@ export const PerformanceMetrics: React.FC = () => {
     </section>
   );
 };
+
