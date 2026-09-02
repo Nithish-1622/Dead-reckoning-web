@@ -13,11 +13,11 @@ export const InstallSection: React.FC = () => {
   const activeDevice = deviceOverride || detected;
 
   return (
-    <section id="install" className="py-28 bg-neutral-100 dark:bg-[#070709] border-t border-neutral-200 dark:border-neutral-800 transition-colors relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="install" className="min-h-[calc(100vh-4.5rem)] flex flex-col justify-center py-10 sm:py-14 bg-neutral-100 dark:bg-[#070709] border-t border-neutral-200 dark:border-neutral-800 transition-colors relative scroll-mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-200 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold">
               <DownloadIcon className="w-3.5 h-3.5" />
@@ -71,9 +71,9 @@ export const InstallSection: React.FC = () => {
         </div>
 
         {/* Dynamic Component Dispatch */}
-        <div className="max-w-4xl mx-auto">
-          {activeDevice === 'android-mobile' && <MobileInstall />}
-          {activeDevice === 'ios-mobile' && <UnsupportedMobileInstall />}
+        <div className="w-full">
+          {activeDevice === 'android-mobile' && <div className="max-w-4xl mx-auto"><MobileInstall /></div>}
+          {activeDevice === 'ios-mobile' && <div className="max-w-4xl mx-auto"><UnsupportedMobileInstall /></div>}
           {activeDevice === 'desktop' && <DesktopInstall />}
           {activeDevice === 'tablet' && <DesktopInstall />}
         </div>

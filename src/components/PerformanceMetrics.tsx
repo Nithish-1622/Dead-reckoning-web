@@ -30,11 +30,11 @@ export const PerformanceMetrics: React.FC = () => {
   });
 
   return (
-    <section id="performance" className="py-28 bg-neutral-100 dark:bg-[#070709] border-t border-neutral-200 dark:border-neutral-800 transition-colors relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="performance" className="min-h-[calc(100vh-4.5rem)] flex flex-col justify-center py-10 sm:py-14 bg-neutral-100 dark:bg-[#070709] border-t border-neutral-200 dark:border-neutral-800 transition-colors relative scroll-mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-4 mb-16">
+        <div className="max-w-3xl space-y-3 sm:space-y-4 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-200 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold">
             <BarChartIcon className="w-3.5 h-3.5" />
             <span>EMPIRICAL BENCHMARKS</span>

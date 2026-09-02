@@ -5,11 +5,11 @@ export const SensorEngine: React.FC = () => {
   const [selectedAxis, setSelectedAxis] = useState<'all' | 'x' | 'y' | 'z'>('all');
 
   return (
-    <section id="technology" className="py-28 bg-white dark:bg-black border-t border-neutral-200 dark:border-neutral-800 transition-colors relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="technology" className="min-h-[calc(100vh-4.5rem)] flex flex-col justify-center py-10 sm:py-14 bg-white dark:bg-black border-t border-neutral-200 dark:border-neutral-800 transition-colors relative scroll-mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
         {/* Header */}
-        <div className="max-w-3xl space-y-4 mb-16">
+        <div className="max-w-3xl space-y-3 sm:space-y-4 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 text-xs font-mono font-bold">
             <HardDriveIcon className="w-3.5 h-3.5" />
             <span>SENSOR PLATFORM</span>
@@ -59,29 +59,87 @@ export const SensorEngine: React.FC = () => {
                 <div className="w-10 h-1 bg-neutral-400 dark:bg-neutral-600 rounded-full" />
 
                 {/* IMU Center Chip with High-Contrast Badge */}
-                <div className="relative p-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black border border-neutral-800 dark:border-neutral-200 shadow-md text-center">
+                <div className="relative z-20 p-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black border border-neutral-800 dark:border-neutral-200 shadow-md text-center">
                   <ActivityIcon className="w-6 h-6 mx-auto animate-pulse text-white dark:text-black" />
                   <div className="text-[8px] font-mono font-bold mt-1">MEMS IMU</div>
                   <div className="text-[7px] font-mono text-neutral-400 dark:text-neutral-600">200 Hz</div>
                 </div>
 
-                {/* Coordinate Vectors */}
-                {(selectedAxis === 'all' || selectedAxis === 'x') && (
-                  <div className="absolute top-1/2 left-1/2 w-28 h-0.5 bg-neutral-900 dark:bg-neutral-100 -translate-y-1/2 flex items-center justify-end">
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded ml-1">X (Lat)</span>
-                  </div>
-                )}
+                {/* 3D-on-2D Oblique Coordinate Vector Lines */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+                  <defs>
+                    <marker id="arrow-y" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1.5 L 10 5 L 0 8.5 z" className="fill-neutral-900 dark:fill-neutral-100" />
+                    </marker>
+                    <marker id="arrow-x" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1.5 L 10 5 L 0 8.5 z" className="fill-neutral-900 dark:fill-neutral-100" />
+                    </marker>
+                    <marker id="arrow-z" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1.5 L 10 5 L 0 8.5 z" className="fill-neutral-900 dark:fill-neutral-100" />
+                    </marker>
+                  </defs>
 
+                  {/* Y-Axis: Forward (Up) */}
+                  {(selectedAxis === 'all' || selectedAxis === 'y') && (
+                    <line
+                      x1="50%"
+                      y1="50%"
+                      x2="50%"
+                      y2="14%"
+                      className="stroke-neutral-900 dark:stroke-neutral-100 stroke-2"
+                      markerEnd="url(#arrow-y)"
+                    />
+                  )}
+
+                  {/* X-Axis: Lateral (Right) */}
+                  {(selectedAxis === 'all' || selectedAxis === 'x') && (
+                    <line
+                      x1="50%"
+                      y1="50%"
+                      x2="88%"
+                      y2="50%"
+                      className="stroke-neutral-900 dark:stroke-neutral-100 stroke-2"
+                      markerEnd="url(#arrow-x)"
+                    />
+                  )}
+
+                  {/* Z-Axis: Vertical Depth (Slightly Sidewise Oblique Line ↙) */}
+                  {(selectedAxis === 'all' || selectedAxis === 'z') && (
+                    <line
+                      x1="50%"
+                      y1="50%"
+                      x2="16%"
+                      y2="80%"
+                      className="stroke-neutral-900 dark:stroke-neutral-100 stroke-2"
+                      markerEnd="url(#arrow-z)"
+                    />
+                  )}
+                </svg>
+
+                {/* Y-Axis Label: Top */}
                 {(selectedAxis === 'all' || selectedAxis === 'y') && (
-                  <div className="absolute top-1/2 left-1/2 h-28 w-0.5 bg-neutral-900 dark:bg-neutral-100 -translate-x-1/2 -translate-y-full flex flex-col items-center justify-start">
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded mb-1">Y (Fwd)</span>
+                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-20">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded shadow-sm">
+                      Y (Fwd)
+                    </span>
                   </div>
                 )}
 
+                {/* X-Axis Label: Right */}
+                {(selectedAxis === 'all' || selectedAxis === 'x') && (
+                  <div className="absolute top-1/2 right-1 translate-x-full -translate-y-1/2 z-20">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded shadow-sm ml-1.5">
+                      X (Lat)
+                    </span>
+                  </div>
+                )}
+
+                {/* Z-Axis Label: Sidewise Oblique (Down-Left) */}
                 {(selectedAxis === 'all' || selectedAxis === 'z') && (
-                  <div className="absolute top-1/2 left-1/2 w-5 h-5 rounded-full border-2 border-neutral-900 dark:border-neutral-100 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-neutral-100" />
-                    <span className="absolute -top-5 -right-14 text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded">Z (Vert)</span>
+                  <div className="absolute bottom-7 left-1 -translate-x-full z-20">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-black text-white dark:bg-white dark:text-black rounded shadow-sm mr-1.5">
+                      Z (Vert)
+                    </span>
                   </div>
                 )}
 
