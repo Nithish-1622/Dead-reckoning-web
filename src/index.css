@@ -23,6 +23,11 @@
     --text-muted: #9E9EA8;
   }
 
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
   body {
     background-color: var(--bg-main);
     color: var(--text-main);
