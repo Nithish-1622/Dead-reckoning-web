@@ -25,32 +25,32 @@ export const AppContent: React.FC = () => {
         {/* 1. Hero with Live Navigation Simulation */}
         <Hero />
 
-        {/* 2. Problem: GNSS Outages in Real-World Scenarios */}
+        {/* 2. Device-Aware Installation Gateway (Deploy IDR to your hardware) */}
+        <InstallSection />
+
+        {/* 3. Problem: GNSS Outages in Real-World Scenarios */}
         <ProblemSection />
 
-        {/* 3. Technology: Smartphone Sensor Platform */}
+        {/* 4. Technology: Smartphone Sensor Platform */}
         <SensorEngine />
 
-        {/* 4. Intelligence: AI Signal Filtering & Speed Regression */}
+        {/* 5. Intelligence: AI Signal Filtering & Speed Regression */}
         <MLEngineSection />
 
-        {/* 5. 8-Stage Architecture Flow */}
+        {/* 6. 8-Stage Architecture Flow */}
         <ArchitectureFlow />
 
-        {/* 6. Outage Continuity Timeline */}
+        {/* 7. Outage Continuity Timeline */}
         <GNSSTransition />
 
-        {/* 7. Map Matching & Kinematic Constraints */}
+        {/* 8. Map Matching & Kinematic Constraints */}
         <MapMatching />
 
-        {/* 8. Empirical Performance Benchmarks */}
+        {/* 9. Empirical Performance Benchmarks */}
         <PerformanceMetrics />
 
-        {/* 9. Live Monitoring & Fleet Session Console */}
+        {/* 10. Live Monitoring & Fleet Session Console */}
         <MonitoringDashboard />
-
-        {/* 10. Device-Aware Installation Gateway */}
-        <InstallSection />
 
         {/* 11. Final Call-to-Action */}
         <FinalCTA />
