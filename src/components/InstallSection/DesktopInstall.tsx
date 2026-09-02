@@ -95,57 +95,65 @@ export const DesktopInstall: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch w-full">
       
-      {/* Pairing Gateway Card */}
-      <div className="p-5 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-6 sm:space-y-8 shadow-xl">
+      {/* ========================================================================= */}
+      {/* LEFT COLUMN (50%): Desktop Pairing & Dispatch Gateway                     */}
+      {/* ========================================================================= */}
+      <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-4 shadow-xl flex flex-col justify-between h-full">
         
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-neutral-200 dark:border-neutral-800">
+        {/* Card Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-sm">
-              <LaptopIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="p-2.5 rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-sm shrink-0">
+              <LaptopIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-xl font-bold text-neutral-950 dark:text-white">Desktop Pairing & Dispatch Gateway</h3>
-              <p className="text-[11px] sm:text-xs text-neutral-500 font-mono">Transfer the standalone APK directly to your smartphone</p>
-            </div>
-          </div>
-          <div className="self-start sm:self-auto px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 text-[11px] sm:text-xs font-mono text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 font-bold">
-            Selected: {selectedVersion.version} ({selectedVersion.tag})
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center">
-          
-          {/* QR Code Card */}
-          <div className="flex flex-col items-center p-4 sm:p-6 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 space-y-3 text-center">
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-white border border-neutral-300 shadow-sm">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(selectedVersion.apkUrl)}`}
-                alt={`Scan QR code to install IDR app ${selectedVersion.version}`}
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
-                loading="lazy"
-              />
-            </div>
-            <div className="space-y-1">
-              <div className="font-bold text-xs font-mono text-neutral-950 dark:text-white">
-                Scan with phone camera ({selectedVersion.version})
-              </div>
-              <p className="text-[11px] text-neutral-500 max-w-[200px]">
-                Direct high-speed download link for the signed APK package ({selectedVersion.fileSize}).
+              <h3 className="text-base sm:text-lg font-bold text-neutral-950 dark:text-white">
+                Desktop Pairing & Dispatch Gateway
+              </h3>
+              <p className="text-[11px] sm:text-xs text-neutral-500 font-mono">
+                Transfer the standalone APK directly to your smartphone
               </p>
             </div>
           </div>
 
-          {/* Email & SMS Transfer Forms */}
-          <div className="space-y-5">
+          <div className="self-start sm:self-auto px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 text-[11px] font-mono text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 font-bold shrink-0">
+            Active: {selectedVersion.version}
+          </div>
+        </div>
+
+        {/* QR Code + Dispatch Methods Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center flex-grow py-1">
+          
+          {/* QR Code Container (5 cols on sm+) */}
+          <div className="sm:col-span-5 flex flex-col items-center p-4 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 space-y-2 text-center">
+            <div className="p-2 rounded-2xl bg-white border border-neutral-300 shadow-sm">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(selectedVersion.apkUrl)}`}
+                alt={`Scan QR code to install IDR app ${selectedVersion.version}`}
+                className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                loading="lazy"
+              />
+            </div>
+            <div className="space-y-0.5">
+              <div className="font-bold text-xs font-mono text-neutral-950 dark:text-white">
+                Scan with camera
+              </div>
+              <p className="text-[10px] text-neutral-500 font-mono">
+                Signed APK ({selectedVersion.fileSize})
+              </p>
+            </div>
+          </div>
+
+          {/* Transfer Dispatch Form (7 cols on sm+) */}
+          <div className="sm:col-span-7 space-y-3.5">
             
-            {/* Share Method Switcher Tabs (Email / SMS) */}
-            <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
+            {/* Switcher Tabs (Email / SMS) */}
+            <div className="flex items-center gap-1.5 border-b border-neutral-200 dark:border-neutral-800 pb-2">
               <button
                 onClick={() => setShareTab('email')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all ${
+                className={`px-3 py-1 rounded-xl text-xs font-mono font-semibold transition-all ${
                   shareTab === 'email'
                     ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
@@ -155,7 +163,7 @@ export const DesktopInstall: React.FC = () => {
               </button>
               <button
                 onClick={() => setShareTab('sms')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all ${
+                className={`px-3 py-1 rounded-xl text-xs font-mono font-semibold transition-all ${
                   shareTab === 'sms'
                     ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
@@ -167,17 +175,17 @@ export const DesktopInstall: React.FC = () => {
 
             {/* Notification alert */}
             {sentNotice && (
-              <div className="p-3 rounded-xl bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-                <CheckIcon className="w-4 h-4 text-neutral-950 dark:text-white shrink-0" />
+              <div className="p-2 rounded-xl bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                <CheckIcon className="w-3.5 h-3.5 text-neutral-950 dark:text-white shrink-0" />
                 <span>{sentNotice}</span>
               </div>
             )}
 
             {/* Email Form */}
             {shareTab === 'email' && (
-              <form onSubmit={handleSendEmail} className="space-y-2">
-                <label className="text-xs font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
-                  Send {selectedVersion.version} download link to your Email:
+              <form onSubmit={handleSendEmail} className="space-y-1.5">
+                <label className="text-[11px] font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
+                  Send {selectedVersion.version} link to Email:
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -186,13 +194,13 @@ export const DesktopInstall: React.FC = () => {
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     required
-                    className="flex-grow px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white min-w-0"
+                    className="flex-grow px-3 py-2 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white min-w-0"
                   />
                   <button
                     type="submit"
-                    className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all shrink-0 hover:opacity-90"
+                    className="px-3.5 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-1 shadow-sm transition-all shrink-0 hover:opacity-90"
                   >
-                    <SendIcon className="w-3.5 h-3.5" />
+                    <SendIcon className="w-3 h-3" />
                     <span>Send</span>
                   </button>
                 </div>
@@ -201,9 +209,9 @@ export const DesktopInstall: React.FC = () => {
 
             {/* SMS Form */}
             {shareTab === 'sms' && (
-              <form onSubmit={handleSendSms} className="space-y-2">
-                <label className="text-xs font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
-                  Send {selectedVersion.version} download link via SMS:
+              <form onSubmit={handleSendSms} className="space-y-1.5">
+                <label className="text-[11px] font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
+                  Send {selectedVersion.version} link via SMS:
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -212,130 +220,164 @@ export const DesktopInstall: React.FC = () => {
                     value={phoneInput}
                     onChange={(e) => setPhoneInput(e.target.value)}
                     required
-                    className="flex-grow px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white min-w-0"
+                    className="flex-grow px-3 py-2 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white min-w-0"
                   />
                   <button
                     type="submit"
-                    className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all shrink-0 hover:opacity-90"
+                    className="px-3.5 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-1 shadow-sm transition-all shrink-0 hover:opacity-90"
                   >
-                    <SendIcon className="w-3.5 h-3.5" />
+                    <SendIcon className="w-3 h-3" />
                     <span>Send</span>
                   </button>
                 </div>
               </form>
             )}
 
-            {/* Direct URL copy */}
-            <div className="space-y-1.5 pt-2">
-              <label className="text-xs font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
-                Direct Download URL:
+            {/* Direct URL Copy Field */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-mono text-neutral-800 dark:text-neutral-200 font-bold block">
+                Direct Download Link:
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <input
                   type="text"
                   readOnly
                   value={selectedVersion.apkUrl}
-                  className="flex-grow px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-[11px] sm:text-xs font-mono text-neutral-500 select-all min-w-0"
+                  className="flex-grow px-3 py-2 rounded-xl bg-neutral-50 dark:bg-black/50 border border-neutral-300 dark:border-neutral-700 text-[11px] font-mono text-neutral-500 select-all min-w-0"
                 />
                 <button
                   onClick={handleCopy}
-                  className="p-2.5 sm:p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white border border-neutral-300 dark:border-neutral-700 transition-all shrink-0"
+                  className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white border border-neutral-300 dark:border-neutral-700 transition-all shrink-0"
                   title="Copy URL"
                 >
-                  {copied ? <CheckIcon className="w-4 h-4 text-black dark:text-white" /> : <CopyIcon className="w-4 h-4" />}
+                  {copied ? <CheckIcon className="w-3.5 h-3.5 text-black dark:text-white" /> : <CopyIcon className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
-            <div className="pt-1">
+            {/* Quick Desktop Download Link */}
+            <div className="pt-0.5">
               <a
                 href={selectedVersion.apkUrl}
                 download
-                className="inline-flex items-center gap-2 text-[11px] sm:text-xs font-mono text-neutral-900 dark:text-neutral-100 hover:underline underline-offset-4 font-bold"
+                className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-900 dark:text-neutral-100 hover:underline underline-offset-4 font-bold"
               >
-                <DownloadIcon className="w-3.5 h-3.5" /> Direct desktop download ({selectedVersion.version}, {selectedVersion.fileSize})
+                <DownloadIcon className="w-3.5 h-3.5" />
+                <span>Direct download ({selectedVersion.version}, {selectedVersion.fileSize})</span>
               </a>
             </div>
+
           </div>
 
         </div>
+
+        {/* Security / Architecture Footer */}
+        <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-neutral-500">
+          <div className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100 font-semibold">
+            <ShieldCheckIcon className="w-3.5 h-3.5 text-black dark:text-white" />
+            <span>Signed Release Package</span>
+          </div>
+          <span>ARM64-v8a • SHA: {selectedVersion.sha256}</span>
+        </div>
+
       </div>
 
-      {/* Mock Version Archive & Release History Table */}
-      <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-6 shadow-xl">
+      {/* ========================================================================= */}
+      {/* RIGHT COLUMN (50%): Available Build Versions List                         */}
+      {/* ========================================================================= */}
+      <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0D0D12] border border-neutral-200 dark:border-neutral-800 space-y-3.5 shadow-xl flex flex-col justify-between h-full">
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-neutral-200 dark:border-neutral-800">
           <div>
             <div className="text-[10px] font-mono text-neutral-500 uppercase font-bold">RELEASE ARCHIVE</div>
-            <h3 className="text-lg sm:text-xl font-bold text-neutral-950 dark:text-white mt-0.5">Available Build Versions</h3>
+            <h3 className="text-base sm:text-lg font-bold text-neutral-950 dark:text-white mt-0.5">
+              Available Build Versions
+            </h3>
           </div>
-          <div className="text-xs font-mono text-neutral-500">
-            Select a version to update pairing & download package
-          </div>
+          <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700 font-bold">
+            {MOCK_VERSIONS.length} BUILDS
+          </span>
         </div>
 
-        {/* Version List */}
-        <div className="space-y-3">
+        {/* Structured Version Cards List */}
+        <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
           {MOCK_VERSIONS.map((v) => {
             const isSelected = selectedVersion.version === v.version;
             return (
               <div
                 key={v.version}
                 onClick={() => setSelectedVersion(v)}
-                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                   isSelected
-                    ? 'bg-neutral-100 dark:bg-[#15151C] border-black dark:border-white shadow-md'
+                    ? 'bg-neutral-100 dark:bg-[#15151C] border-black dark:border-white shadow-md ring-1 ring-black/10 dark:ring-white/20'
                     : 'bg-neutral-50 dark:bg-black/30 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600'
                 }`}
               >
-                <div className="space-y-1.5 flex-grow">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-bold font-mono text-sm text-neutral-950 dark:text-white">{v.version}</span>
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
-                      v.tag === 'LATEST STABLE'
-                        ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
-                        : v.tag === 'BETA'
-                        ? 'bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white border-neutral-400'
-                        : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
-                    }`}>
+                {/* Version Title + Tag Badge */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold font-mono text-sm text-neutral-950 dark:text-white">
+                      {v.version}
+                    </span>
+                    <span
+                      className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                        v.tag === 'LATEST STABLE'
+                          ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                          : v.tag === 'BETA'
+                          ? 'bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white border-neutral-400'
+                          : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+                      }`}
+                    >
                       {v.tag}
                     </span>
-                    <span className="text-xs font-mono text-neutral-500">• {v.releaseDate}</span>
                   </div>
 
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
-                    {v.changelog}
-                  </p>
+                  <span className="text-[10px] font-mono text-neutral-500 shrink-0">
+                    {v.releaseDate}
+                  </span>
+                </div>
 
-                  <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-neutral-500 pt-1">
-                    <span>Target: {v.targetSdk}</span>
-                    <span>Size: {v.fileSize}</span>
-                    <span className="hidden sm:inline">SHA: {v.sha256}</span>
+                {/* Changelog Description */}
+                <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2">
+                  {v.changelog}
+                </p>
+
+                {/* Meta Specs & Download Button */}
+                <div className="flex items-center justify-between pt-1 border-t border-neutral-200/60 dark:border-neutral-800/60 text-[10px] font-mono text-neutral-500">
+                  <div className="flex items-center gap-2.5">
+                    <span>{v.fileSize}</span>
+                    <span>•</span>
+                    <span className="truncate max-w-[110px]">{v.targetSdk}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {isSelected ? (
+                      <span className="text-[10px] font-bold text-neutral-950 dark:text-white flex items-center gap-1">
+                        <CheckIcon className="w-3 h-3 text-emerald-500" /> Selected
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-neutral-400 hover:text-black dark:hover:text-white underline">
+                        Select
+                      </span>
+                    )}
+
+                    <a
+                      href={v.apkUrl}
+                      download
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 px-2 rounded-lg bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-[10px] flex items-center gap-1 hover:opacity-90 shadow-sm"
+                      title="Direct Download APK"
+                    >
+                      <DownloadIcon className="w-3 h-3" />
+                      <span>APK</span>
+                    </a>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-start md:self-center shrink-0">
-                  <a
-                    href={v.apkUrl}
-                    download
-                    onClick={(e) => e.stopPropagation()}
-                    className="px-4 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-xs flex items-center gap-1.5 hover:opacity-90 shadow-sm"
-                  >
-                    <DownloadIcon className="w-3.5 h-3.5" />
-                    <span>Download APK</span>
-                  </a>
-                </div>
               </div>
             );
           })}
-        </div>
-
-        <div className="pt-2 flex items-center justify-between text-xs font-mono text-neutral-500 border-t border-neutral-200 dark:border-neutral-800">
-          <div className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100 font-bold">
-            <ShieldCheckIcon className="w-4 h-4 text-black dark:text-white" />
-            <span>Cryptographically Signed Release Packages</span>
-          </div>
-          <span>ARM64-v8a Compiled</span>
         </div>
 
       </div>
