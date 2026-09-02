@@ -8,7 +8,7 @@ export const Hero: React.FC = () => {
   const deviceType = detectDevice();
 
   return (
-    <section id="product" className="relative pt-24 pb-16 sm:pt-32 sm:pb-24 lg:pt-40 lg:pb-32 overflow-hidden">
+    <section id="product" className="relative min-h-[calc(100vh-4.5rem)] flex flex-col justify-center pt-24 pb-14 sm:pt-28 sm:pb-16 overflow-hidden scroll-mt-16">
       
       {/* 3D Interactive Gyroscope & Celestial Satellite Background */}
       <ThreeDimensionalBackground />
