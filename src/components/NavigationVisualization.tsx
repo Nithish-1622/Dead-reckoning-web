@@ -10,7 +10,11 @@ import {
   CrosshairIcon, 
   Building2Icon,
   LayersIcon,
-  EyeIcon
+  EyeIcon,
+  SatelliteIcon,
+  CpuIcon,
+  ActivityIcon,
+  WifiOffIcon,
 } from './Icons';
 import { GNSSState, DRMode } from '../lib/types';
 import { useTheme } from '../lib/theme';
@@ -475,12 +479,21 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     setManualOutage(null);
   };
 
+  // Helper to compute cardinal direction from heading
+  const getCardinalDirection = (deg: number) => {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const idx = Math.round((((deg % 360) + 360) % 360) / 22.5) % 16;
+    return directions[idx];
+  };
+
   // Compute 3D Perspective CSS Transform based on active view angle
   const getMapTransformStyle = () => {
     if (viewAngle === '3d-cockpit') {
       return {
-        transform: 'perspective(900px) rotateX(46deg) scale(1.16)',
-        transformOrigin: '50% 82%',
+        transform: 'perspective(850px) rotateX(46deg) scale(1.22)',
+        transformOrigin: '50% 90%',
+        maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 97%)',
+        WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 97%)',
         transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
       };
     }
@@ -498,10 +511,10 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
   };
 
   return (
-    <div className="relative w-full rounded-2xl sm:rounded-3xl bg-neutral-100 dark:bg-[#0D0D11] border border-neutral-300 dark:border-neutral-800 shadow-xl overflow-hidden transition-all">
+    <div className="relative w-full rounded-2xl sm:rounded-3xl bg-neutral-100 dark:bg-[#07070C] border border-neutral-300 dark:border-neutral-800 shadow-2xl overflow-hidden transition-all">
       
       {/* Top Banner (Turn Maneuver + Coimbatore Circuits) */}
-      <div className="p-3.5 sm:p-5 bg-white dark:bg-[#121216] border-b border-neutral-300 dark:border-neutral-800 relative z-30 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+      <div className="p-3.5 sm:p-5 bg-white dark:bg-[#0D0D12] border-b border-neutral-300 dark:border-neutral-800 relative z-30 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         
         {/* Left: Turn-by-Turn Maneuver */}
         <div className="flex items-center gap-3">
@@ -599,22 +612,186 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
           <span
             className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-mono font-bold uppercase transition-all shrink-0 ${
               telemetry.gnssStatus === 'LOCKED'
-                ? 'bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white border border-neutral-400 dark:border-neutral-600'
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40'
                 : telemetry.gnssStatus === 'LOST'
-                ? 'bg-black text-white dark:bg-white dark:text-black border border-neutral-700 dark:border-neutral-300 animate-pulse'
+                ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 animate-pulse'
                 : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700'
             }`}
           >
-            {telemetry.gnssStatus === 'LOST' ? 'DR ACTIVE' : `GNSS ${telemetry.gnssStatus}`}
+            {telemetry.gnssStatus === 'LOST' ? '⚡ DR ACTIVE (INS ONLY)' : `GNSS ${telemetry.gnssStatus}`}
           </span>
         </div>
       </div>
 
       {/* Real-time Map Viewport with 3D Perspective Angles */}
-      <div className="relative w-full h-[360px] sm:h-[520px] overflow-hidden">
+      <div className="relative w-full h-[400px] sm:h-[540px] overflow-hidden bg-[#050811]">
         
-        {/* 3D Atmospheric Sky Horizon Gradient when in 3D Mode */}
-        {viewAngle !== '2d' && (
+        {/* ================================================================= */}
+        {/* 3D COCKPIT AEROSPACE SKY HORIZON & HEADS-UP DISPLAY (HUD)         */}
+        {/* ================================================================= */}
+        {viewAngle === '3d-cockpit' && (
+          <div className="absolute inset-x-0 top-0 h-52 z-20 pointer-events-none select-none overflow-hidden">
+            {/* 1. Deep Midnight Cybernetic Sky Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#04060E] via-[#080E20]/90 to-transparent" />
+            
+            {/* 2. Cyber Horizon Grid with Luminous Cyan Vanishing Line */}
+            <div className="absolute top-32 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
+            <div className="absolute top-28 inset-x-0 h-8 bg-cyan-500/5 blur-xl pointer-events-none" />
+
+            {/* 3. Distant Skyline Vector Silhouette */}
+            <svg
+              className="absolute top-20 inset-x-0 w-full h-12 opacity-25 text-cyan-400"
+              preserveAspectRatio="none"
+              viewBox="0 0 1000 80"
+            >
+              <polygon
+                points="0,80 0,55 60,40 120,60 180,30 240,50 320,20 400,45 480,15 560,40 640,25 720,50 800,35 880,55 940,30 1000,45 1000,80"
+                fill="currentColor"
+              />
+            </svg>
+
+            {/* 4. Horizon Cockpit HUD Header Strip */}
+            <div className="relative z-10 px-3 sm:px-6 pt-3 grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+              
+              {/* Left Wing: GNSS Orbital Radar & Dual Frequency L1/L5 */}
+              <div className="hidden md:flex md:col-span-4 items-center gap-3 p-2.5 rounded-2xl bg-black/75 backdrop-blur-md border border-neutral-700/60 shadow-xl font-mono text-[11px] text-white">
+                <div className="relative w-11 h-11 rounded-full border border-cyan-500/40 bg-cyan-950/30 flex items-center justify-center shrink-0 overflow-hidden">
+                  {/* Radar Concentric Rings */}
+                  <div className="absolute inset-1 rounded-full border border-cyan-500/20" />
+                  <div className="absolute inset-2.5 rounded-full border border-cyan-500/15" />
+                  {/* Center Dot */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4]" />
+                  {/* Satellite Blips */}
+                  {telemetry.satellites > 0 ? (
+                    <>
+                      <div className="absolute top-2 left-3 w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                      <div className="absolute bottom-2.5 right-3 w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                      <div className="absolute top-4 right-2 w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                      <div className="absolute bottom-3 left-2 w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-red-950/60">
+                      <WifiOffIcon className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                    </div>
+                  )}
+                  {/* Sweeping Scanner Line */}
+                  <div className="absolute inset-0 origin-center animate-spin" style={{ animationDuration: '3s' }}>
+                    <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent to-cyan-400" />
+                  </div>
+                </div>
+
+                <div className="min-w-0 flex-grow">
+                  <div className="flex items-center justify-between text-[10px] text-neutral-400 pb-0.5">
+                    <span className="font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                      <SatelliteIcon className="w-3 h-3" />
+                      GNSS CONSTELLATION
+                    </span>
+                    <span className="font-bold text-white">
+                      {telemetry.satellites > 0 ? `${telemetry.satellites}/32 SATS` : '0 SATS'}
+                    </span>
+                  </div>
+                  <div className="text-[10px] font-bold text-neutral-200 flex items-center justify-between">
+                    <span>BAND: L1/L5 DUAL</span>
+                    <span className={telemetry.satellites === 0 ? 'text-red-400 animate-pulse' : 'text-emerald-400'}>
+                      {telemetry.satellites === 0 ? 'BLACKOUT' : 'LOCKED'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Wing: Digital Compass Heading Ribbon Tape */}
+              <div className="col-span-12 md:col-span-4 flex flex-col items-center">
+                {/* Compass Tape Box */}
+                <div className="w-full max-w-[280px] p-2 rounded-2xl bg-black/80 backdrop-blur-md border border-neutral-700/60 shadow-2xl flex flex-col items-center font-mono">
+                  {/* Digital Bearing Display */}
+                  <div className="flex items-center gap-2 text-xs font-bold text-white mb-1">
+                    <CrosshairIcon className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-cyan-400 text-sm tracking-wider font-extrabold">
+                      {telemetry.headingDeg.toFixed(0).padStart(3, '0')}°
+                    </span>
+                    <span className="text-neutral-400 text-[11px] font-semibold">
+                      {getCardinalDirection(telemetry.headingDeg)}
+                    </span>
+                  </div>
+
+                  {/* Horizontal Compass Tick Tape */}
+                  <div className="relative w-full h-5 overflow-hidden flex items-center justify-center border-t border-b border-neutral-800 bg-neutral-950/60 rounded px-2">
+                    {/* Fixed Center Index Marker */}
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-cyan-400 z-20 shadow-[0_0_8px_#06b6d4]">
+                      <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-cyan-400 -mt-0.5 -ml-1" />
+                    </div>
+
+                    {/* Scrolling Degree Tape */}
+                    <div
+                      className="flex items-center gap-4 text-[9px] text-neutral-400 font-bold transition-transform duration-100 ease-linear"
+                      style={{
+                        transform: `translateX(${-((telemetry.headingDeg % 360) * 2.2) + 20}px)`,
+                      }}
+                    >
+                      {[-360, 0, 360].map((base) =>
+                        [
+                          { deg: 0, label: 'N' },
+                          { deg: 45, label: 'NE' },
+                          { deg: 90, label: 'E' },
+                          { deg: 135, label: 'SE' },
+                          { deg: 180, label: 'S' },
+                          { deg: 225, label: 'SW' },
+                          { deg: 270, label: 'W' },
+                          { deg: 315, label: 'NW' },
+                        ].map((pt) => (
+                          <div key={`${base}-${pt.deg}`} className="flex items-center gap-1 shrink-0">
+                            <span className={pt.label === 'N' ? 'text-red-400 font-extrabold' : 'text-neutral-300'}>
+                              {pt.label}
+                            </span>
+                            <span className="text-[8px] text-neutral-600">{(pt.deg + base + 360) % 360}°</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Wing: 200Hz INS Kalman Filter State Matrix */}
+              <div className="hidden md:flex md:col-span-4 items-center justify-between gap-3 p-2.5 rounded-2xl bg-black/75 backdrop-blur-md border border-neutral-700/60 shadow-xl font-mono text-[11px] text-white">
+                <div className="space-y-1 min-w-0 flex-grow">
+                  <div className="flex items-center justify-between text-[10px] text-neutral-400 pb-0.5">
+                    <span className="font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                      <CpuIcon className="w-3 h-3" />
+                      200Hz INS KALMAN
+                    </span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300">
+                      TIGHTLY-COUPLED
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 text-[10px]">
+                    <div>
+                      <span className="text-neutral-500 text-[8px] block">DRIFT</span>
+                      <span className="font-bold text-neutral-100">±{telemetry.positionErrorM}m</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 text-[8px] block">AI CONF</span>
+                      <span className="font-bold text-emerald-400">{telemetry.aiConfidencePct}%</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 text-[8px] block">COV (P)</span>
+                      <span className="font-bold text-neutral-100">{telemetry.covariance}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-center shrink-0">
+                  <ActivityIcon className="w-4 h-4 text-cyan-400 mx-auto animate-pulse" />
+                  <span className="text-[8px] font-bold text-cyan-300 block mt-0.5">200 Hz</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* 3D Atmospheric Sky Horizon Gradient when in 3D Isometric Mode */}
+        {viewAngle === '3d-isometric' && (
           <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-neutral-900/60 dark:from-black/80 to-transparent pointer-events-none z-20" />
         )}
 
@@ -626,57 +803,59 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
         />
 
         {/* Speedometer Gauge (Bottom Left) */}
-        <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-center shadow-lg z-20 min-w-[70px] sm:min-w-[90px]">
-          <div className="text-[8px] sm:text-[10px] font-mono text-neutral-500 uppercase font-bold">SPEED</div>
-          <div className="text-lg sm:text-2xl font-mono font-extrabold text-neutral-950 dark:text-white leading-tight">
+        <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/85 backdrop-blur-md border border-neutral-700/70 text-center shadow-2xl z-20 min-w-[75px] sm:min-w-[95px] text-white font-mono">
+          <div className="text-[8px] sm:text-[10px] text-neutral-400 uppercase font-bold">SPEED</div>
+          <div className="text-xl sm:text-3xl font-extrabold text-white leading-tight">
             {telemetry.speedKmh}
           </div>
-          <div className="text-[8px] sm:text-[10px] font-mono text-neutral-500 font-bold">KM/H</div>
+          <div className="text-[8px] sm:text-[10px] text-cyan-400 font-bold">KM/H</div>
         </div>
 
-        {/* High-Contrast Telemetry Card (Top Left) */}
-        <div className="absolute top-3 left-3 sm:top-5 sm:left-5 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[10px] sm:text-[11px] font-mono space-y-1.5 sm:space-y-3 shadow-lg max-w-[160px] sm:max-w-[240px] z-20">
-          <div className="flex items-center justify-between pb-1 sm:pb-2 border-b border-neutral-200 dark:border-neutral-800">
-            <span className="text-neutral-500 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider">
-              {viewAngle === '3d-cockpit' ? '3D Cockpit' : viewAngle === '3d-isometric' ? '3D Isometric' : '2D Overhead'}
-            </span>
-            <span className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700">
-              200Hz INS
-            </span>
+        {/* High-Contrast Telemetry Card (For 3D Iso & 2D Top Views) */}
+        {viewAngle !== '3d-cockpit' && (
+          <div className="absolute top-3 left-3 sm:top-5 sm:left-5 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[10px] sm:text-[11px] font-mono space-y-1.5 sm:space-y-3 shadow-lg max-w-[160px] sm:max-w-[240px] z-20">
+            <div className="flex items-center justify-between pb-1 sm:pb-2 border-b border-neutral-200 dark:border-neutral-800">
+              <span className="text-neutral-500 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider">
+                {viewAngle === '3d-isometric' ? '3D Isometric' : '2D Overhead'}
+              </span>
+              <span className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700">
+                200Hz INS
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 sm:gap-x-3 sm:gap-y-2">
+              <div>
+                <div className="text-neutral-500 text-[8px] sm:text-[10px]">ERR</div>
+                <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
+                  ±{telemetry.positionErrorM}m
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500 text-[8px] sm:text-[10px]">SATS</div>
+                <div className={`font-bold text-xs sm:text-sm ${telemetry.satellites === 0 ? 'text-black dark:text-white underline' : 'text-neutral-950 dark:text-white'}`}>
+                  {telemetry.satellites > 0 ? `${telemetry.satellites}/32` : '0 (LOST)'}
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500 text-[8px] sm:text-[10px]">HEADING</div>
+                <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
+                  {telemetry.headingDeg}°
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500 text-[8px] sm:text-[10px]">AI CONF</div>
+                <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
+                  {telemetry.aiConfidencePct}%
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1 sm:gap-x-3 sm:gap-y-2">
-            <div>
-              <div className="text-neutral-500 text-[8px] sm:text-[10px]">ERR</div>
-              <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
-                ±{telemetry.positionErrorM}m
-              </div>
-            </div>
-            <div>
-              <div className="text-neutral-500 text-[8px] sm:text-[10px]">SATS</div>
-              <div className={`font-bold text-xs sm:text-sm ${telemetry.satellites === 0 ? 'text-black dark:text-white underline' : 'text-neutral-950 dark:text-white'}`}>
-                {telemetry.satellites > 0 ? `${telemetry.satellites}/32` : '0 (LOST)'}
-              </div>
-            </div>
-            <div>
-              <div className="text-neutral-500 text-[8px] sm:text-[10px]">HEADING</div>
-              <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
-                {telemetry.headingDeg}°
-              </div>
-            </div>
-            <div>
-              <div className="text-neutral-500 text-[8px] sm:text-[10px]">AI CONF</div>
-              <div className="font-bold text-xs sm:text-sm text-neutral-950 dark:text-white">
-                {telemetry.aiConfidencePct}%
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Live Coordinate Footer on Map */}
-        <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 p-2 sm:p-2.5 rounded-xl bg-white/95 dark:bg-[#0D0D12]/95 border border-neutral-300 dark:border-neutral-700 text-[9px] sm:text-[10px] font-mono shadow-lg z-20 hidden xs:block">
-          <span className="text-neutral-500">COIMBATORE GPS: </span>
-          <span className="font-bold text-neutral-950 dark:text-white">{telemetry.lat.toFixed(4)}° N, {telemetry.lng.toFixed(4)}° E</span>
+        <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 p-2 sm:p-2.5 rounded-xl bg-black/85 backdrop-blur-md border border-neutral-700/70 text-[9px] sm:text-[10px] font-mono shadow-2xl z-20 hidden xs:block text-white">
+          <span className="text-neutral-400">COIMBATORE GPS: </span>
+          <span className="font-bold text-cyan-300">{telemetry.lat.toFixed(4)}° N, {telemetry.lng.toFixed(4)}° E</span>
         </div>
       </div>
 
