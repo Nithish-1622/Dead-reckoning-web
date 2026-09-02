@@ -10,7 +10,6 @@ import { MapMatching } from './components/MapMatching';
 import { PerformanceMetrics } from './components/PerformanceMetrics';
 import { MonitoringDashboard } from './components/MonitoringDashboard';
 import { InstallSection } from './components/InstallSection/InstallSection';
-import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 import { ThemeProvider } from './lib/theme';
 
@@ -53,7 +52,6 @@ export const AppContent: React.FC = () => {
         <MonitoringDashboard />
 
         {/* 11. Final Call-to-Action */}
-        <FinalCTA />
       </main>
 
       {/* Monochrome Aerospace Footer */}
