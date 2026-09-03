@@ -13,23 +13,23 @@ const MOBILE_VERSIONS: ReleaseVersion[] = [
   {
     version: 'v1.4.2',
     tag: 'LATEST STABLE',
-    fileSize: '18.4 MB',
-    changelog: 'Strapdown quaternion mechanization with ONNX INT8 velocity model.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.4.2.apk'
+    fileSize: '48.6 MB',
+    changelog: 'Official Expo EAS production build: Strapdown quaternion mechanization with ONNX INT8 velocity model.',
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0'
   },
   {
     version: 'v1.5.0-RC2',
     tag: 'BETA PREVIEW',
-    fileSize: '20.2 MB',
+    fileSize: '49.1 MB',
     changelog: 'Dual-frequency raw pseudorange carrier phase fusion.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.5.0-rc2.apk'
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0'
   },
   {
     version: 'v1.3.8',
     tag: 'LTS BATTERY OPTIMIZED',
-    fileSize: '17.8 MB',
+    fileSize: '46.2 MB',
     changelog: 'Adaptive gyroscope power-gating (18% battery savings).',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.3.8.apk'
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0'
   }
 ];
 
@@ -41,8 +41,8 @@ export const MobileInstall: React.FC = () => {
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      window.location.href = selectedVersion.apkUrl;
-    }, 1200);
+      window.open(selectedVersion.apkUrl, '_blank');
+    }, 600);
   };
 
   return (

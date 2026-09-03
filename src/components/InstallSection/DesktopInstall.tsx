@@ -23,41 +23,41 @@ const MOCK_VERSIONS: ReleaseVersion[] = [
   {
     version: 'v1.4.2',
     tag: 'LATEST STABLE',
-    releaseDate: 'August 28, 2026',
-    fileSize: '18.4 MB',
+    releaseDate: 'September 03, 2026',
+    fileSize: '48.6 MB',
     targetSdk: 'Android 11+ (API 30–34)',
-    changelog: 'Strapdown quaternion mechanization with ONNX INT8 edge vehicle velocity model & tunnel covariance bounds.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.4.2.apk',
-    sha256: '9a7f3c2b...8e41a02d'
+    changelog: 'Official Expo EAS production build: Strapdown quaternion mechanization with ONNX INT8 edge vehicle velocity model & tunnel covariance bounds.',
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0',
+    sha256: 'dc82bd59...3bb8b69f'
   },
   {
     version: 'v1.5.0-RC2',
     tag: 'BETA',
     releaseDate: 'August 24, 2026',
-    fileSize: '20.2 MB',
+    fileSize: '49.1 MB',
     targetSdk: 'Android 13+ (API 33+)',
     changelog: 'Dual-frequency raw pseudorange carrier phase fusion with experimental sub-surface subterranean parking graph matching.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.5.0-rc2.apk',
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0',
     sha256: '3f8e12ac...5d9081b2'
   },
   {
     version: 'v1.4.0',
     tag: 'ENTERPRISE',
     releaseDate: 'July 15, 2026',
-    fileSize: '19.1 MB',
+    fileSize: '47.8 MB',
     targetSdk: 'Android 11+ (API 30+)',
     changelog: 'Fleet multi-device MQTT telemetry logging with offline vector road topology tile pre-caching.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.4.0.apk',
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0',
     sha256: '1a5b82c0...4f7623e9'
   },
   {
     version: 'v1.3.8',
     tag: 'LTS',
     releaseDate: 'May 02, 2026',
-    fileSize: '17.8 MB',
+    fileSize: '46.2 MB',
     targetSdk: 'Android 10+ (API 29+)',
     changelog: 'Ultra low-power adaptive gyroscope power-gating, reducing battery drain by 18% during extended highway cruises.',
-    apkUrl: 'https://idr-dead-reckoning.app/download/idr-v1.3.8.apk',
+    apkUrl: 'https://expo.dev/accounts/mukeshkannan.t2024/projects/dead-reckoning-app/builds/dc82bd59-34f0-4556-8b3a-baf3bb8b69f0',
     sha256: '6c2e91df...7a1190bc'
   }
 ];
@@ -130,8 +130,8 @@ export const DesktopInstall: React.FC = () => {
           <div className="sm:col-span-5 flex flex-col items-center p-4 rounded-2xl bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 space-y-2 text-center">
             <div className="p-2 rounded-2xl bg-white border border-neutral-300 shadow-sm">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(selectedVersion.apkUrl)}`}
-                alt={`Scan QR code to install IDR app ${selectedVersion.version}`}
+                src="/app-qr.png"
+                alt="Scan QR code to install IDR app build"
                 className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
                 loading="lazy"
               />
@@ -141,7 +141,7 @@ export const DesktopInstall: React.FC = () => {
                 Scan with camera
               </div>
               <p className="text-[10px] text-neutral-500 font-mono">
-                Signed APK ({selectedVersion.fileSize})
+                Expo EAS Build APK ({selectedVersion.fileSize})
               </p>
             </div>
           </div>
@@ -259,7 +259,8 @@ export const DesktopInstall: React.FC = () => {
             <div className="pt-0.5">
               <a
                 href={selectedVersion.apkUrl}
-                download
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-900 dark:text-neutral-100 hover:underline underline-offset-4 font-bold"
               >
                 <DownloadIcon className="w-3.5 h-3.5" />
@@ -364,10 +365,11 @@ export const DesktopInstall: React.FC = () => {
 
                     <a
                       href={v.apkUrl}
-                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="p-1 px-2 rounded-lg bg-black text-white dark:bg-white dark:text-black font-mono font-bold text-[10px] flex items-center gap-1 hover:opacity-90 shadow-sm"
-                      title="Direct Download APK"
+                      title="Direct Download APK from Expo EAS Build"
                     >
                       <DownloadIcon className="w-3 h-3" />
                       <span>APK</span>
