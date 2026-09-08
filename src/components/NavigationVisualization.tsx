@@ -8,7 +8,6 @@ import {
   ShieldAlertIcon, 
   CompassIcon, 
   CrosshairIcon, 
-  Building2Icon,
   LayersIcon,
   EyeIcon,
   SatelliteIcon,
@@ -25,6 +24,16 @@ interface NavigationVisualizationProps {
 
 export type MapViewAngle = '2d' | '3d-cockpit' | '3d-isometric';
 
+export interface RoadSegment {
+  id: string;
+  name: string;
+  type: 'straight' | 'left_turn' | 'right_turn' | 'curved' | 'destination';
+  speedLimit: number;
+  zone: 'open' | 'urban-canyon' | 'tunnel' | 'recovering';
+  maneuver: string;
+  polyline: [number, number][]; // High-density [lat, lng]
+}
+
 export interface CityRoute {
   id: string;
   name: string;
@@ -33,268 +42,423 @@ export interface CityRoute {
   destination: string;
   center: [number, number]; // [lat, lng]
   zoom: number;
-  // High-density, exact real-world road centerline coordinates [lat, lng]
-  roadPath: [number, number][];
-  waypoints: {
-    lat: number;
-    lng: number;
-    street: string;
-    zone: 'open' | 'urban-canyon' | 'tunnel' | 'recovering';
-    speedLimit: number;
-    maneuver: string;
-  }[];
+  segments: RoadSegment[];
 }
 
 export const COIMBATORE_NAVIGATION_ROUTES: CityRoute[] = [
   {
     id: 'cbe-gandhipuram',
-    name: 'Coimbatore — Gandhipuram Flyover & 100ft Road Loop',
+    name: 'Coimbatore — Gandhipuram Central Circuit (1.2 km)',
     shortName: 'Gandhipuram, CBE',
     state: 'Tamil Nadu',
     destination: 'Cross Cut Rd via Gandhipuram Under-Deck',
-    center: [11.0195, 76.9630],
-    zoom: 16,
-    roadPath: [
-      // 1. Dr. Nanjappa Road (Heading North toward Gandhipuram)
-      [11.01450, 76.96320],
-      [11.01550, 76.96390],
-      [11.01660, 76.96470],
-      [11.01750, 76.96540], // Gandhipuram Signal
-      // 2. Gandhipuram 2-Tier Flyover Sub-Deck (Tunnel / Outage Zone on Sathyamangalam Rd)
-      [11.01860, 76.96620], // Enter Flyover Sub-Level (Outage begins)
-      [11.01970, 76.96700], // Under Flyover Deck
-      [11.02080, 76.96780],
-      [11.02190, 76.96860], // North Portal Exit
-      // 3. Turn Left onto 100 Feet Road (Heading West)
-      [11.02280, 76.96750],
-      [11.02340, 76.96580],
-      [11.02380, 76.96400], // 100 Feet Road Arterial
-      [11.02410, 76.96200],
-      [11.02430, 76.96000],
-      // 4. Turn Left onto Cross Cut Road (Heading South)
-      [11.02350, 76.95920],
-      [11.02180, 76.95850], // Cross Cut Road Shopping District
-      [11.02000, 76.95780],
-      [11.01820, 76.95710], // Brookefields Mall Arterial
-      // 5. Return via Dr. Rajendra Prasad Rd back to Dr. Nanjappa Rd
-      [11.01680, 76.95850],
-      [11.01560, 76.96080],
-      [11.01450, 76.96320]  // Loop complete
-    ],
-    waypoints: [
-      { lat: 11.01450, lng: 76.96320, street: 'Dr. Nanjappa Road', zone: 'open', speedLimit: 40, maneuver: 'Head North on Dr. Nanjappa Rd' },
-      { lat: 11.01750, lng: 76.96540, street: 'Gandhipuram Central Signal', zone: 'urban-canyon', speedLimit: 35, maneuver: 'Approaching 2-Tier Flyover Underpass' },
-      { lat: 11.01860, lng: 76.96620, street: 'Gandhipuram Flyover Under-Deck', zone: 'tunnel', speedLimit: 45, maneuver: 'Enter Flyover Sub-Deck (GNSS Lost)' },
-      { lat: 11.02080, lng: 76.96780, street: 'Sathyamangalam Road Corridor', zone: 'tunnel', speedLimit: 48, maneuver: 'Flyover Underpass Transit (200Hz INS Active)' },
-      { lat: 11.02190, lng: 76.96860, street: 'GP North Ramp Exit', zone: 'recovering', speedLimit: 40, maneuver: 'Exiting Flyover Deck toward 100 Feet Rd' },
-      { lat: 11.02380, lng: 76.96400, street: '100 Feet Road', zone: 'open', speedLimit: 45, maneuver: 'Continue West on 100 Feet Rd' },
-      { lat: 11.02180, lng: 76.95850, street: 'Cross Cut Road Hub', zone: 'urban-canyon', speedLimit: 30, maneuver: 'Turn Left onto Cross Cut Rd' },
-      { lat: 11.01820, lng: 76.95710, street: 'Brookefields Mall Arterial', zone: 'open', speedLimit: 40, maneuver: 'Arriving at Destination' }
+    center: [11.01850, 76.96750],
+    zoom: 18,
+    segments: [
+      {
+        id: 'seg-1-nanjappa',
+        name: 'Dr. Nanjappa Road (NH 181)',
+        type: 'straight',
+        speedLimit: 40,
+        zone: 'open',
+        maneuver: 'Head North on Dr. Nanjappa Rd toward Signal',
+        polyline: [
+          [11.01450, 76.96770],
+          [11.01530, 76.96780],
+          [11.01610, 76.96790],
+          [11.01690, 76.96800],
+          [11.01750, 76.96810]
+        ]
+      },
+      {
+        id: 'seg-2-left-turn-gp',
+        name: 'Gandhipuram Central Signal Junction',
+        type: 'left_turn',
+        speedLimit: 25,
+        zone: 'urban-canyon',
+        maneuver: 'Turn LEFT onto Cross Cut Road',
+        polyline: [
+          [11.01750, 76.96810],
+          [11.01765, 76.96780],
+          [11.01780, 76.96740],
+          [11.01800, 76.96700]
+        ]
+      },
+      {
+        id: 'seg-3-cross-cut-straight',
+        name: 'Cross Cut Road Arterial',
+        type: 'straight',
+        speedLimit: 35,
+        zone: 'urban-canyon',
+        maneuver: 'Continue Straight on Cross Cut Road High Street',
+        polyline: [
+          [11.01800, 76.96700],
+          [11.01850, 76.96580],
+          [11.01900, 76.96460],
+          [11.01950, 76.96340],
+          [11.02000, 76.96220],
+          [11.02060, 76.96080],
+          [11.02120, 76.95940],
+          [11.02180, 76.95840]
+        ]
+      },
+      {
+        id: 'seg-4-right-turn-100ft',
+        name: 'Cross Cut & 100 Feet Rd Intersection',
+        type: 'right_turn',
+        speedLimit: 25,
+        zone: 'recovering',
+        maneuver: 'Turn RIGHT onto 100 Feet Road',
+        polyline: [
+          [11.02180, 76.95840],
+          [11.02210, 76.95870],
+          [11.02235, 76.95930],
+          [11.02250, 76.96010]
+        ]
+      },
+      {
+        id: 'seg-5-100ft-straight',
+        name: '100 Feet Road (Dr. Radhakrishnan Rd)',
+        type: 'straight',
+        speedLimit: 45,
+        zone: 'open',
+        maneuver: 'Continue Straight East on 100 Feet Rd',
+        polyline: [
+          [11.02250, 76.96010],
+          [11.02280, 76.96160],
+          [11.02310, 76.96320],
+          [11.02340, 76.96480],
+          [11.02370, 76.96640],
+          [11.02400, 76.96800],
+          [11.02420, 76.96880]
+        ]
+      },
+      {
+        id: 'seg-6-sathy-flyover-curved',
+        name: 'Gandhipuram 2-Tier Flyover Under-Deck (NH 948)',
+        type: 'curved',
+        speedLimit: 45,
+        zone: 'tunnel',
+        maneuver: 'Enter Flyover Sub-Deck Underpass (200Hz INS Active)',
+        polyline: [
+          [11.02420, 76.96880],
+          [11.02360, 76.96880],
+          [11.02270, 76.96870],
+          [11.02170, 76.96855],
+          [11.02060, 76.96840],
+          [11.01950, 76.96825],
+          [11.01850, 76.96815],
+          [11.01750, 76.96810]
+        ]
+      },
+      {
+        id: 'seg-7-destination-return',
+        name: 'Gandhipuram Central Hub',
+        type: 'destination',
+        speedLimit: 35,
+        zone: 'open',
+        maneuver: 'Looping via Dr. Nanjappa Road to Origin',
+        polyline: [
+          [11.01750, 76.96810],
+          [11.01650, 76.96800],
+          [11.01550, 76.96785],
+          [11.01450, 76.96770]
+        ]
+      }
     ]
   },
   {
     id: 'cbe-avinashi',
-    name: 'Coimbatore — Avinashi Road Elevated Corridor (SH 52)',
+    name: 'Coimbatore — Avinashi Road Expressway Corridor (1.2 km)',
     shortName: 'Avinashi Rd, CBE',
     state: 'Tamil Nadu',
-    destination: 'Coimbatore Airport (CJB) Corridor',
-    center: [11.0250, 77.0100],
-    zoom: 15,
-    roadPath: [
-      // Avinashi Road Linear Centerline
-      [11.01250, 76.98220], // Lakshmi Mills Junction
-      [11.01450, 76.98650],
-      [11.01650, 76.99050],
-      [11.01820, 76.99450], // Nava India Signal
-      [11.02050, 76.99950],
-      [11.02250, 77.00350],
-      [11.02380, 77.00680], // Peelamedu Elevated Expressway Shadow (GNSS Outage begins)
-      [11.02550, 77.01050],
-      [11.02650, 77.01350], // PSG Tech Main Gate Underpass
-      [11.02800, 77.01750],
-      [11.02980, 77.02250], // Hope College Under-Deck
-      [11.03150, 77.02650],
-      [11.03350, 77.03100], // Fun Republic Mall
-      [11.03550, 77.03600],
-      [11.03780, 77.04250], // KMCH & Coimbatore Airport (CJB) Road
-      // Smooth return loop
-      [11.03550, 77.03600],
-      [11.03150, 77.02650],
-      [11.02650, 77.01350],
-      [11.02050, 76.99950],
-      [11.01250, 76.98220]
-    ],
-    waypoints: [
-      { lat: 11.01250, lng: 76.98220, street: 'Lakshmi Mills Junction', zone: 'open', speedLimit: 50, maneuver: 'Head East on Avinashi Road' },
-      { lat: 11.01820, lng: 76.99450, street: 'Nava India Canyon', zone: 'urban-canyon', speedLimit: 45, maneuver: 'Passing Commercial High-Rise Zone' },
-      { lat: 11.02380, lng: 77.00680, street: 'Peelamedu Elevated Deck Shadow', zone: 'tunnel', speedLimit: 55, maneuver: 'Elevated Deck Shadow (Zero GNSS Lock)' },
-      { lat: 11.02650, lng: 77.01350, street: 'PSG Tech Underpass Zone', zone: 'tunnel', speedLimit: 60, maneuver: 'Dead Reckoning Trajectory Active' },
-      { lat: 11.02980, lng: 77.02250, street: 'Hope College Sub-Level Portal', zone: 'recovering', speedLimit: 50, maneuver: 'Signal Restoring near Hope College' },
-      { lat: 11.03780, lng: 77.04250, street: 'Coimbatore Airport (CJB) Road', zone: 'open', speedLimit: 60, maneuver: 'Turn Right toward Airport Terminal' }
+    destination: 'Peelamedu via Avinashi Rd (SH 52)',
+    center: [11.01580, 76.99700],
+    zoom: 18,
+    segments: [
+      {
+        id: 'seg-av-1',
+        name: 'Avinashi Road (SH 52 Eastbound)',
+        type: 'straight',
+        speedLimit: 50,
+        zone: 'open',
+        maneuver: 'Head East on Avinashi Road Corridor',
+        polyline: [
+          [11.01100, 76.98600],
+          [11.01250, 76.98950],
+          [11.01400, 76.99300],
+          [11.01550, 76.99650],
+          [11.01700, 77.00000]
+        ]
+      },
+      {
+        id: 'seg-av-2',
+        name: 'Nava India Commercial Junction',
+        type: 'straight',
+        speedLimit: 45,
+        zone: 'urban-canyon',
+        maneuver: 'Passing High-Rise Commercial Zone',
+        polyline: [
+          [11.01700, 77.00000],
+          [11.01850, 77.00350],
+          [11.02000, 77.00700],
+          [11.02150, 77.01050]
+        ]
+      },
+      {
+        id: 'seg-av-3',
+        name: 'Peelamedu Elevated Deck Shadow',
+        type: 'curved',
+        speedLimit: 55,
+        zone: 'tunnel',
+        maneuver: 'Elevated Expressway Shadow (200Hz INS Active)',
+        polyline: [
+          [11.02150, 77.01050],
+          [11.02250, 77.01300],
+          [11.02320, 77.01500],
+          [11.02300, 77.01550],
+          [11.02220, 77.01450]
+        ]
+      },
+      {
+        id: 'seg-av-4',
+        name: 'Avinashi Road (Westbound Return)',
+        type: 'destination',
+        speedLimit: 50,
+        zone: 'open',
+        maneuver: 'Returning West toward Lakshmi Mills',
+        polyline: [
+          [11.02220, 77.01450],
+          [11.02000, 77.00700],
+          [11.01700, 77.00000],
+          [11.01400, 76.99300],
+          [11.01100, 76.98600]
+        ]
+      }
     ]
   },
   {
     id: 'cbe-rspuram',
-    name: 'Coimbatore — RS Puram & DB Road Corridor',
+    name: 'Coimbatore — RS Puram & DB Road (1.0 km)',
     shortName: 'RS Puram, CBE',
     state: 'Tamil Nadu',
     destination: 'Thadagam Road via DB Road',
-    center: [11.0110, 76.9490],
-    zoom: 16,
-    roadPath: [
-      // Diwan Bahadur (DB) Road Centerline
-      [11.00550, 76.95350], // DB Road South Entry
-      [11.00750, 76.95200],
-      [11.00950, 76.95050], // Flower Market Roundabout
-      [11.01150, 76.94900], // RS Puram Head Post Office
-      [11.01350, 76.94750], // Cowley Brown Road Underpass Shadow
-      [11.01550, 76.94600], // Dense commercial canopy
-      [11.01750, 76.94450], // Thadagam Road Junction
-      // Turn onto Thadagam Road
-      [11.01850, 76.94250],
-      [11.01750, 76.93950], // TNAU Campus Gate
-      [11.01450, 76.94150],
-      [11.01050, 76.94550],
-      [11.00550, 76.95350]
-    ],
-    waypoints: [
-      { lat: 11.00550, lng: 76.95350, street: 'DB Road South', zone: 'open', speedLimit: 35, maneuver: 'Head North on Diwan Bahadur Rd' },
-      { lat: 11.01150, lng: 76.94900, street: 'RS Puram Post Office Signal', zone: 'urban-canyon', speedLimit: 30, maneuver: 'Approaching Dense Commercial Zone' },
-      { lat: 11.01350, lng: 76.94750, street: 'Cowley Brown Road Shadow', zone: 'tunnel', speedLimit: 40, maneuver: 'Multipath Shadow Outage (INS Engaged)' },
-      { lat: 11.01750, lng: 76.94450, street: 'Thadagam Road Junction', zone: 'recovering', speedLimit: 35, maneuver: 'Reacquiring Satellite Constellation' },
-      { lat: 11.01750, lng: 76.93950, street: 'TNAU Campus Gate', zone: 'open', speedLimit: 45, maneuver: 'Arriving at Destination' }
+    center: [11.01000, 76.94850],
+    zoom: 18,
+    segments: [
+      {
+        id: 'seg-rs-1',
+        name: 'Diwan Bahadur (DB) Road South',
+        type: 'straight',
+        speedLimit: 35,
+        zone: 'open',
+        maneuver: 'Head North on Diwan Bahadur Road',
+        polyline: [
+          [11.00400, 76.95350],
+          [11.00550, 76.95230],
+          [11.00700, 76.95110],
+          [11.00850, 76.94990]
+        ]
+      },
+      {
+        id: 'seg-rs-2',
+        name: 'RS Puram Head Post Office Hub',
+        type: 'straight',
+        speedLimit: 30,
+        zone: 'urban-canyon',
+        maneuver: 'Passing Central Commercial Sector',
+        polyline: [
+          [11.00850, 76.94990],
+          [11.01000, 76.94870],
+          [11.01150, 76.94750],
+          [11.01300, 76.94630]
+        ]
+      },
+      {
+        id: 'seg-rs-3',
+        name: 'Cowley Brown Road Canopy',
+        type: 'curved',
+        speedLimit: 35,
+        zone: 'tunnel',
+        maneuver: 'Dense Tree Canopy Outage (INS Engaged)',
+        polyline: [
+          [11.01300, 76.94630],
+          [11.01450, 76.94510],
+          [11.01600, 76.94390],
+          [11.01680, 76.94300],
+          [11.01600, 76.94250]
+        ]
+      },
+      {
+        id: 'seg-rs-4',
+        name: 'DB Road Return Corridor',
+        type: 'destination',
+        speedLimit: 35,
+        zone: 'open',
+        maneuver: 'Arriving at Destination Hub',
+        polyline: [
+          [11.01600, 76.94250],
+          [11.01300, 76.94630],
+          [11.00900, 76.94950],
+          [11.00400, 76.95350]
+        ]
+      }
     ]
   }
 ];
+
+// Helper to flatten route segments into continuous polyline with segment metadata
+interface CompiledRoutePoint {
+  lat: number;
+  lng: number;
+  segmentIndex: number;
+  segment: RoadSegment;
+  cumDistM: number;
+}
+
+function compileRoute(route: CityRoute): {
+  points: CompiledRoutePoint[];
+  totalDistanceM: number;
+} {
+  const points: CompiledRoutePoint[] = [];
+  let cumDist = 0;
+
+  route.segments.forEach((seg, segIdx) => {
+    seg.polyline.forEach((pt) => {
+      if (points.length > 0) {
+        const prev = points[points.length - 1];
+        const dLat = (pt[0] - prev.lat) * 111320;
+        const dLng = (pt[1] - prev.lng) * 111320 * Math.cos(((pt[0] + prev.lat) * 0.5 * Math.PI) / 180);
+        const d = Math.hypot(dLat, dLng);
+        cumDist += Math.max(d, 0.0001);
+      }
+      points.push({
+        lat: pt[0],
+        lng: pt[1],
+        segmentIndex: segIdx,
+        segment: seg,
+        cumDistM: cumDist,
+      });
+    });
+  });
+
+  return { points, totalDistanceM: cumDist };
+}
+
+// Angular difference helper (-180 to +180)
+function angleDiff(a: number, b: number): number {
+  return ((b - a + 180) % 360) - 180;
+}
+
+// Smooth circular angle interpolation
+function lerpAngle(current: number, target: number, t: number): number {
+  const diff = angleDiff(current, target);
+  return (current + diff * t + 360) % 360;
+}
 
 export const NavigationVisualization: React.FC<NavigationVisualizationProps> = ({ onStatusChange }) => {
   const { theme } = useTheme();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const carMarkerRef = useRef<L.Marker | null>(null);
-  const liveTrailRef = useRef<L.Polyline | null>(null);
-  const buildingsLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [activeCityId, setActiveCityId] = useState<string>('cbe-gandhipuram');
   const [viewAngle, setViewAngle] = useState<MapViewAngle>('3d-cockpit');
   const [isPlaying, setIsPlaying] = useState(true);
-  const [progress, setProgress] = useState(0.08);
+  const [progress, setProgress] = useState(0.02);
   const [simSpeed, setSimSpeed] = useState(1);
   const [manualOutage, setManualOutage] = useState<boolean | null>(null);
   const [cameraFollow, setCameraFollow] = useState(true);
-  const [show3DBuildings, setShow3DBuildings] = useState(true);
-  const [currentStreet, setCurrentStreet] = useState('Dr. Nanjappa Road, Coimbatore');
-  const [currentManeuver, setCurrentManeuver] = useState('Head North on Dr. Nanjappa Rd');
+  const [currentStreet, setCurrentStreet] = useState('Dr. Nanjappa Road (NH 181)');
+  const [currentManeuver, setCurrentManeuver] = useState('Head North on Dr. Nanjappa Rd toward Signal');
   const [speedLimit, setSpeedLimit] = useState(40);
+
+  // Filtered smoothed vehicle state
+  const smoothStateRef = useRef({
+    lat: 11.01450,
+    lng: 76.96770,
+    heading: 8.0,
+    speed: 40.0,
+    segmentIdx: 0,
+    isInitialized: false,
+  });
 
   const [telemetry, setTelemetry] = useState({
     gnssStatus: 'LOCKED' as GNSSState,
     drMode: 'STANDBY' as DRMode,
-    speedKmh: 42.4,
-    headingDeg: 15.0,
+    speedKmh: 40.0,
+    headingDeg: 8.0,
     positionErrorM: 0.7,
     imuRateHz: 200,
     aiConfidencePct: 99.4,
     satellites: 28,
     covariance: 0.32,
     lat: 11.0145,
-    lng: 76.9632
+    lng: 76.9677,
   });
 
   const currentCity = COIMBATORE_NAVIGATION_ROUTES.find((c) => c.id === activeCityId) || COIMBATORE_NAVIGATION_ROUTES[0];
+  const compiledRoute = compileRoute(currentCity);
 
-  // Exact Linear Road Snapping (Lat/Lng strictly along road centerline vectors)
-  const getRoadSnappedPosition = (t: number) => {
-    const path = currentCity.roadPath;
-    const totalSegments = path.length - 1;
+  // Map-matched road progression engine
+  const getRoadMatchedVehicleState = (t: number) => {
+    const { points, totalDistanceM } = compiledRoute;
+    if (points.length < 2) {
+      return {
+        lat: currentCity.center[0],
+        lng: currentCity.center[1],
+        heading: 0,
+        segment: currentCity.segments[0],
+        speedLimit: 40,
+      };
+    }
+
     const clampedT = Math.max(0, Math.min(0.9999, t));
-    const scaledT = clampedT * totalSegments;
-    const segmentIdx = Math.floor(scaledT);
-    const localT = scaledT - segmentIdx;
+    const targetDistance = clampedT * totalDistanceM;
 
-    const p1 = path[segmentIdx]; // [lat, lng]
-    const p2 = path[segmentIdx + 1]; // [lat, lng]
+    // Locate road segment polyline index
+    let idx = 0;
+    while (idx < points.length - 2 && points[idx + 1].cumDistM < targetDistance) {
+      idx++;
+    }
 
-    const lat = p1[0] + (p2[0] - p1[0]) * localT;
-    const lng = p1[1] + (p2[1] - p1[1]) * localT;
+    const p1 = points[idx];
+    const p2 = points[idx + 1];
+    const segDist = p2.cumDistM - p1.cumDistM;
+    const localRatio = segDist > 0 ? (targetDistance - p1.cumDistM) / segDist : 0;
 
-    // Calculate heading angle from road vector
-    const dLat = p2[0] - p1[0];
-    const dLng = p2[1] - p1[1];
-    const heading = ((Math.atan2(dLng, dLat) * (180 / Math.PI)) + 360) % 360;
+    // Strict linear interpolation along road centerline
+    const rawLat = p1.lat + (p2.lat - p1.lat) * localRatio;
+    const rawLng = p1.lng + (p2.lng - p1.lng) * localRatio;
 
-    // Closest waypoint for maneuver info
-    const wps = currentCity.waypoints;
-    const wpIdx = Math.min(Math.floor(clampedT * wps.length), wps.length - 1);
-    const currentWp = wps[wpIdx];
+    // Strict tangent heading along road vector
+    const dLat = p2.lat - p1.lat;
+    const dLng = p2.lng - p1.lng;
+    const rawHeading = ((Math.atan2(dLng, dLat) * (180 / Math.PI)) + 360) % 360;
 
-    return { lat, lng, heading, currentWp };
-  };
-
-  // Generate 3D Extrusion Buildings along the Coimbatore road corridor
-  const create3DBuildingPolygons = (map: L.Map, isDark: boolean) => {
-    const buildingGroup = L.layerGroup();
-    const path = currentCity.roadPath;
-
-    path.forEach((pt, i) => {
-      if (i % 2 === 0) {
-        const offsetLat = (Math.sin(i * 1.6) * 0.0007) + 0.0006;
-        const offsetLng = (Math.cos(i * 1.6) * 0.0007) + 0.0006;
-        const heightM = 16 + (i % 5) * 8; // 16m to 48m heights
-
-        const bLat = pt[0] + offsetLat;
-        const bLng = pt[1] + offsetLng;
-        const size = 0.00045;
-
-        // 1. Isometric Building Base Shadow
-        const basePolygon: [number, number][] = [
-          [bLat, bLng],
-          [bLat + size, bLng],
-          [bLat + size, bLng + size],
-          [bLat, bLng + size]
-        ];
-
-        L.polygon(basePolygon, {
-          color: isDark ? '#FFFFFF' : '#000000',
-          weight: 1,
-          opacity: isDark ? 0.35 : 0.25,
-          fillColor: isDark ? '#141420' : '#E2E2EC',
-          fillOpacity: isDark ? 0.85 : 0.75
-        }).addTo(buildingGroup);
-
-        // 2. Extruded Top Roof
-        const roofShift = heightM * 0.000006;
-        const roofPolygon: [number, number][] = [
-          [bLat + roofShift, bLng + roofShift],
-          [bLat + size + roofShift, bLng + roofShift],
-          [bLat + size + roofShift, bLng + size + roofShift],
-          [bLat + roofShift, bLng + size + roofShift]
-        ];
-
-        L.polygon(roofPolygon, {
-          color: isDark ? '#FFFFFF' : '#000000',
-          weight: 1.2,
-          opacity: isDark ? 0.6 : 0.45,
-          fillColor: isDark ? '#222232' : '#C8C8D8',
-          fillOpacity: isDark ? 0.95 : 0.85
-        }).addTo(buildingGroup);
-
-        // 3. Wall Lines connecting Base to Roof
-        for (let v = 0; v < 4; v++) {
-          L.polyline([basePolygon[v], roofPolygon[v]], {
-            color: isDark ? '#FFFFFF' : '#000000',
-            weight: 0.8,
-            opacity: isDark ? 0.4 : 0.3
-          }).addTo(buildingGroup);
-        }
+    // Look-ahead heading for smooth turning transitions at intersections
+    let lookAheadHeading = rawHeading;
+    if (idx < points.length - 2) {
+      const p3 = points[idx + 2];
+      const dLatNext = p3.lat - p2.lat;
+      const dLngNext = p3.lng - p2.lng;
+      const nextHeading = ((Math.atan2(dLngNext, dLatNext) * (180 / Math.PI)) + 360) % 360;
+      if (localRatio > 0.70) {
+        const turnWeight = (localRatio - 0.70) / 0.30;
+        lookAheadHeading = lerpAngle(rawHeading, nextHeading, turnWeight);
       }
-    });
+    }
 
-    buildingGroup.addTo(map);
-    buildingsLayerRef.current = buildingGroup;
+    return {
+      lat: rawLat,
+      lng: rawLng,
+      heading: lookAheadHeading,
+      segment: p1.segment,
+      speedLimit: p1.segment.speedLimit,
+    };
   };
 
-  // Initialize Map strictly snapped to Coimbatore roads
+  // Initialize Map strictly at street navigation zoom (18)
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -304,14 +468,18 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     }
 
     const isDark = theme === 'dark';
+    const firstPoint = currentCity.segments[0].polyline[0];
+
     const map = L.map(mapContainerRef.current, {
-      center: currentCity.center,
-      zoom: currentCity.zoom,
+      center: firstPoint,
+      zoom: 18,
+      minZoom: 16,
+      maxZoom: 19,
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
     });
 
-    // Official OpenStreetMap High-Resolution Vector Tiles (Zero Watermark / Zero API Key required)
+    // High-Resolution OpenStreetMap Vector Tiles with street labels and road markings
     const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     L.tileLayer(tileUrl, { 
@@ -319,41 +487,35 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
       className: isDark ? 'dark-map-tiles' : ''
     }).addTo(map);
 
-    // 3D Building Extrusion Layer
-    if (show3DBuildings) {
-      create3DBuildingPolygons(map, isDark);
-    }
-
-    // Dynamic Live Trajectory Trail
-    const liveTrail = L.polyline([], {
-      color: isDark ? '#FFFFFF' : '#000000',
-      weight: 5,
-      opacity: 0.95,
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-    liveTrailRef.current = liveTrail;
-
     // High-Contrast 3D Navigation Arrow Puck Marker
     const carIcon = L.divIcon({
       className: 'gmaps-nav-marker',
       html: `
-        <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: ${isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)'}; filter: blur(4px);"></div>
-          <div style="position: relative; width: 28px; height: 28px; border-radius: 50%; background: ${isDark ? '#FFFFFF' : '#000000'}; border: 2.5px solid ${isDark ? '#000000' : '#FFFFFF'}; box-shadow: 0 4px 14px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
-            <svg id="cbe-nav-arrow" width="14" height="14" viewBox="0 0 24 24" style="transform-origin: center; transform: rotate(0deg); transition: transform 0.08s linear;">
-              <polygon points="12 2 22 20 12 16 2 20 12 2" fill="${isDark ? '#000000' : '#FFFFFF'}" />
+        <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 38px; height: 38px; border-radius: 50%; background: ${isDark ? 'rgba(56, 189, 248, 0.40)' : 'rgba(2, 132, 199, 0.30)'}; filter: blur(4px);"></div>
+          <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${isDark ? '#080E1A' : '#FFFFFF'}; border: 2.5px solid ${isDark ? '#38BDF8' : '#0284C7'}; box-shadow: 0 4px 14px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;">
+            <svg id="cbe-nav-arrow" width="18" height="18" viewBox="0 0 24 24" style="transform-origin: center; transform: rotate(0deg); transition: transform 0.08s linear;">
+              <polygon points="12 2 22 20 12 16 2 20 12 2" fill="${isDark ? '#38BDF8' : '#0284C7'}" />
             </svg>
           </div>
         </div>
       `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 20]
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
     });
 
-    const marker = L.marker(currentCity.center, { icon: carIcon }).addTo(map);
+    const marker = L.marker(firstPoint, { icon: carIcon }).addTo(map);
     carMarkerRef.current = marker;
     mapInstanceRef.current = map;
+
+    smoothStateRef.current = {
+      lat: firstPoint[0],
+      lng: firstPoint[1],
+      heading: 8.0,
+      speed: 40.0,
+      segmentIdx: 0,
+      isInitialized: true,
+    };
 
     return () => {
       if (mapInstanceRef.current) {
@@ -361,9 +523,9 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
         mapInstanceRef.current = null;
       }
     };
-  }, [activeCityId, theme, show3DBuildings]);
+  }, [activeCityId, theme]);
 
-  // Real-time animation driver
+  // Real-time continuous animation loop
   useEffect(() => {
     let animId: number;
     let lastTimestamp = performance.now();
@@ -386,10 +548,24 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     return () => cancelAnimationFrame(animId);
   }, [isPlaying, simSpeed]);
 
-  // Position calculation strictly along the road path
+  // Map matching & continuous navigation state update
   useEffect(() => {
-    const pos = getRoadSnappedPosition(progress);
-    const isTunnel = pos.currentWp.zone === 'tunnel' || (progress >= 0.20 && progress <= 0.55);
+    const rawState = getRoadMatchedVehicleState(progress);
+    const seg = rawState.segment;
+    const isTunnel = seg.zone === 'tunnel' || (progress >= 0.65 && progress <= 0.88);
+
+    // Apply continuous exponential smoothing to eliminate micro-jitter
+    const smooth = smoothStateRef.current;
+    if (!smooth.isInitialized) {
+      smooth.lat = rawState.lat;
+      smooth.lng = rawState.lng;
+      smooth.heading = rawState.heading;
+      smooth.isInitialized = true;
+    } else {
+      smooth.lat = smooth.lat + (rawState.lat - smooth.lat) * 0.40;
+      smooth.lng = smooth.lng + (rawState.lng - smooth.lng) * 0.40;
+      smooth.heading = lerpAngle(smooth.heading, rawState.heading, 0.35);
+    }
 
     let gnss: GNSSState = 'LOCKED';
     let dr: DRMode = 'STANDBY';
@@ -397,25 +573,25 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     let sats = 28;
     let conf = 99.4;
     let cov = 0.32;
-    let speed = pos.currentWp.speedLimit + Math.sin(progress * 25) * 2.5;
+    let speed = seg.speedLimit + Math.sin(progress * 25) * 2.0;
 
     if (manualOutage === true || (manualOutage === null && isTunnel)) {
       gnss = 'LOST';
       dr = 'ENGAGED';
-      const fraction = manualOutage === true ? 0.6 : (progress - 0.20) / 0.35;
-      posErr = 1.1 + fraction * 1.5;
+      const fraction = manualOutage === true ? 0.6 : (progress - 0.65) / 0.23;
+      posErr = 1.1 + Math.max(0, fraction) * 1.5;
       sats = 0;
-      conf = 98.2 - fraction * 2.0;
-      cov = 1.2 + fraction * 1.5;
-      speed = Math.max(35, speed - 3);
-    } else if (manualOutage === null && pos.currentWp.zone === 'urban-canyon') {
+      conf = 98.2 - Math.max(0, fraction) * 2.0;
+      cov = 1.2 + Math.max(0, fraction) * 1.5;
+      speed = Math.max(30, speed - 2);
+    } else if (manualOutage === null && seg.zone === 'urban-canyon') {
       gnss = 'DEGRADING';
       dr = 'STANDBY';
       posErr = 1.2;
       sats = 6;
       conf = 96.0;
       cov = 0.65;
-    } else if (manualOutage === null && pos.currentWp.zone === 'recovering') {
+    } else if (manualOutage === null && seg.zone === 'recovering') {
       gnss = 'RECOVERING';
       dr = 'CONVERGING';
       posErr = 0.9;
@@ -424,22 +600,22 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
       cov = 0.45;
     }
 
-    setCurrentStreet(pos.currentWp.street);
-    setCurrentManeuver(pos.currentWp.maneuver);
-    setSpeedLimit(pos.currentWp.speedLimit);
+    setCurrentStreet(seg.name);
+    setCurrentManeuver(seg.maneuver);
+    setSpeedLimit(seg.speedLimit);
 
     setTelemetry({
       gnssStatus: gnss,
       drMode: dr,
       speedKmh: Math.round(speed * 10) / 10,
-      headingDeg: Math.round(pos.heading * 10) / 10,
+      headingDeg: Math.round(smooth.heading * 10) / 10,
       positionErrorM: Math.round(posErr * 10) / 10,
       imuRateHz: 200,
       aiConfidencePct: Math.round(conf * 10) / 10,
       satellites: sats,
       covariance: Math.round(cov * 100) / 100,
-      lat: Math.round(pos.lat * 100000) / 100000,
-      lng: Math.round(pos.lng * 100000) / 100000
+      lat: Math.round(smooth.lat * 100000) / 100000,
+      lng: Math.round(smooth.lng * 100000) / 100000,
     });
 
     if (onStatusChange) {
@@ -448,35 +624,24 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
 
     // Update marker location & rotate arrow to exact road heading
     if (carMarkerRef.current) {
-      carMarkerRef.current.setLatLng([pos.lat, pos.lng]);
+      carMarkerRef.current.setLatLng([smooth.lat, smooth.lng]);
       const arrowElem = document.getElementById('cbe-nav-arrow');
       if (arrowElem) {
-        arrowElem.style.transform = `rotate(${pos.heading}deg)`;
+        arrowElem.style.transform = `rotate(${smooth.heading}deg)`;
       }
     }
 
-    // Dynamic Trail strictly along previous road segments
-    if (liveTrailRef.current) {
-      const trailCoords: [number, number][] = [];
-      const step = 0.005;
-      for (let t = Math.max(0, progress - 0.25); t <= progress; t += step) {
-        const pt = getRoadSnappedPosition(t);
-        trailCoords.push([pt.lat, pt.lng]);
-      }
-      trailCoords.push([pos.lat, pos.lng]);
-      liveTrailRef.current.setLatLngs(trailCoords);
-    }
-
-    // Camera follow
+    // Camera follow at street level (instant zero-lag tracking locked to vehicle)
     if (cameraFollow && mapInstanceRef.current) {
-      mapInstanceRef.current.panTo([pos.lat, pos.lng], { animate: true, duration: 0.15 });
+      mapInstanceRef.current.setView([smooth.lat, smooth.lng], mapInstanceRef.current.getZoom(), { animate: false });
     }
   }, [progress, manualOutage, cameraFollow, onStatusChange]);
 
   const handleCityChange = (cityId: string) => {
     setActiveCityId(cityId);
-    setProgress(0.08);
+    setProgress(0.02);
     setManualOutage(null);
+    smoothStateRef.current.isInitialized = false;
   };
 
   // Helper to compute cardinal direction from heading
@@ -486,27 +651,25 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
     return directions[idx];
   };
 
-  // Compute 3D Perspective CSS Transform based on active view angle
+  // Compute Perspective Transform grounded strictly on the road surface
   const getMapTransformStyle = () => {
     if (viewAngle === '3d-cockpit') {
       return {
-        transform: 'perspective(850px) rotateX(46deg) scale(1.22)',
-        transformOrigin: '50% 90%',
-        maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 97%)',
-        WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0) 97%)',
-        transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: 'perspective(1000px) rotateX(24deg) scale(1.08)',
+        transformOrigin: '50% 65%',
+        transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
       };
     }
     if (viewAngle === '3d-isometric') {
       return {
-        transform: 'perspective(1000px) rotateX(32deg) rotateY(-8deg) scale(1.10)',
+        transform: 'perspective(1200px) rotateX(18deg) rotateY(-5deg) scale(1.04)',
         transformOrigin: '50% 50%',
-        transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
       };
     }
     return {
       transform: 'none',
-      transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+      transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
     };
   };
 
@@ -593,20 +756,6 @@ export const NavigationVisualization: React.FC<NavigationVisualizationProps> = (
               <span>2D Top</span>
             </button>
           </div>
-
-          {/* Toggle 3D Buildings Pill */}
-          <button
-            onClick={() => setShow3DBuildings(!show3DBuildings)}
-            className={`p-1.5 px-2.5 rounded-xl border text-xs font-mono font-semibold flex items-center gap-1.5 shadow-sm transition-all ${
-              show3DBuildings
-                ? 'bg-black text-white dark:bg-white dark:text-black border-transparent font-bold'
-                : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
-            }`}
-            title="Toggle 3D Extrusion Building Heights"
-          >
-            <Building2Icon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">3D Buildings</span>
-          </button>
 
           {/* GNSS Status Badge */}
           <span
